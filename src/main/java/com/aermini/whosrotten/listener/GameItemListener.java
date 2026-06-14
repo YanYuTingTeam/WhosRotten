@@ -37,6 +37,16 @@ public class GameItemListener implements Listener {
 
         GameManager.GameState state = plugin.getGameManager().getState();
 
+        // debug: 检测商店物品交互
+        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            String dbgName = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+            if (dbgName.contains("商店") || dbgName.contains("道具")) {
+                player.sendMessage("§7[DEBUG] onInteract fired! item=" + item.getType()
+                    + " name=" + dbgName + " action=" + event.getAction()
+                    + " state=" + state);
+            }
+        }
+
         if (isBook(item)) {
             handleBook(player, item);
             return;
@@ -109,6 +119,7 @@ public class GameItemListener implements Listener {
         if (item.hasItemMeta()) {
             ConfigurationSection itemSec = findItemByDisplayName(item);
             if (itemSec != null) {
+                player.sendMessage("§7[DEBUG] findItem found: " + itemSec.getName() + " menu=" + itemSec.getString("menu"));
                 event.setCancelled(true);
                 if (event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR
                         || event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
@@ -125,12 +136,23 @@ public class GameItemListener implements Listener {
         Player player = event.getPlayer();
         ItemStack item = player.getItemInHand();
         if (item == null || item.getType() == Material.AIR) return;
+        // debug
+        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            String dbgName = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+            if (dbgName.contains("商店") || dbgName.contains("道具")) {
+                player.sendMessage("§7[DEBUG] onBlockPlace fired! item=" + item.getType()
+                    + " name=" + dbgName + " isShop=" + isShopItem(item));
+            }
+        }
         if (isShopItem(item)) {
             event.setCancelled(true);
             ConfigurationSection itemSec = findItemByDisplayName(item);
             if (itemSec != null) {
                 String menuKey = itemSec.getString("menu");
-                if (menuKey != null) plugin.getGameManager().openMenu(player, menuKey);
+                if (menuKey != null) {
+                    player.sendMessage("§7[DEBUG] opening menu: " + menuKey);
+                    plugin.getGameManager().openMenu(player, menuKey);
+                }
             }
         }
     }
@@ -143,7 +165,8 @@ public class GameItemListener implements Listener {
             ConfigurationSection sec = items.getConfigurationSection(key);
             if (sec == null || !sec.contains("menu")) continue;
             String cfgMat = sec.getString("material", "");
-            if (cfgMat != null && !cfgMat.isEmpty() && item.getType() != Material.matchMaterial(cfgMat)) continue;
+            Material matchedMat = cfgMat != null && !cfgMat.isEmpty() ? Material.matchMaterial(cfgMat) : null;
+            if (matchedMat != null && item.getType() != matchedMat) continue;
             String cfgName = ChatColor.stripColor(sec.getString("name", ""));
             if (cfgName.equals(stripped)) return true;
         }
@@ -309,11 +332,19 @@ public class GameItemListener implements Listener {
         if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return null;
         String stripped = ChatColor.stripColor(item.getItemMeta().getDisplayName());
         ConfigurationSection items = cfg.getItemConfig();
+        if (items == null) return null;
         for (String key : items.getKeys(false)) {
             ConfigurationSection sec = items.getConfigurationSection(key);
             if (sec == null || !sec.contains("menu")) continue;
-            String cfgName = ChatColor.stripColor(sec.getString("name", ""));
-            if (cfgName.equals(stripped)) return sec;
+            String cfgName = sec.getString("name", "");
+            String cfgStripped = ChatColor.stripColor(cfgName);
+            // debug
+            if (cfg.getItemConfig().getString("debug", "").equals("true") || stripped.contains("商店")) {
+                org.bukkit.Bukkit.getConsoleSender().sendMessage("§7[WhosRotten] findItem key=" + key
+                    + " cfgName=[" + cfgName + "] cfgStripped=[" + cfgStripped
+                    + "] itemStripped=[" + stripped + "] equals=" + cfgStripped.equals(stripped));
+            }
+            if (cfgStripped.equals(stripped)) return sec;
         }
         return null;
     }

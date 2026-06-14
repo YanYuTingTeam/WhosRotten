@@ -107,10 +107,7 @@ public class GameCombatListener implements Listener {
 
         if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) {
             event.getDrops().clear();
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                dead.spigot().respawn();
-                dead.setGameMode(org.bukkit.GameMode.SPECTATOR);
-            }, 1L);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> dead.spigot().respawn(), 1L);
             return;
         }
 
@@ -158,22 +155,17 @@ public class GameCombatListener implements Listener {
             }
         }
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            dead.spigot().respawn();
-            dead.setGameMode(org.bukkit.GameMode.SPECTATOR);
-        }, 1L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> dead.spigot().respawn(), 3L);
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
-        if (plugin.getGameManager().getState() != GameManager.GameState.GAMING
-                && plugin.getGameManager().getState() != GameManager.GameState.ENDING) return;
-
         Player player = event.getPlayer();
-        // set spectator after a tick
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
+        if (gp == null) return;
+        if (!gp.isAlive()) {
             player.setGameMode(org.bukkit.GameMode.SPECTATOR);
-        }, 1L);
+        }
     }
 
     private void handleKill(Player damaged, Player attacker) {
