@@ -142,6 +142,11 @@ public class GameManager {
         }
 
         if (cfg.getOnlinePlayers() == 0 && state != GameState.WAITING) {
+            if (state == GameState.ENDING) {
+                stopMainLoop();
+                stopFireworkLoop();
+                Bukkit.shutdown();
+                return;}
             resetGame();
         }
         updateScoreboard();
