@@ -189,3 +189,9 @@ bungee:
   lobby: lobby
   full-restart: true # 整端重启.
   restart-time: 10 # 重启倒计时. 在此倒计时结束之前为ending状态.
+
+motd:
+  waiting: 'already'
+  starting: '即将开始'
+  gaming: '游戏中'
+  ending: '结束中'
