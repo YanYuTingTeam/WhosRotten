@@ -34,6 +34,18 @@ public class GameShopListener implements Listener {
         String title = event.getView().getTitle();
         if (title == null) return;
 
+        // close
+        ItemStack currentItem = event.getCurrentItem();
+        if (currentItem != null && currentItem.getType() == Material.STAINED_GLASS_PANE
+                && currentItem.hasItemMeta() && currentItem.getItemMeta().hasDisplayName()) {
+            String stripped = ChatColor.stripColor(currentItem.getItemMeta().getDisplayName());
+            if ("关闭".equals(stripped)) {
+                event.setCancelled(true);
+                player.closeInventory();
+                return;
+            }
+        }
+
         // shop menus
         if (title.contains("[商店]")) {
             event.setCancelled(true);

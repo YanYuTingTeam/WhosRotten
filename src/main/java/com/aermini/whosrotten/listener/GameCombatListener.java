@@ -133,7 +133,7 @@ public class GameCombatListener implements Listener {
             }
         }
 
-        plugin.getGameManager().broadcastTitle("death", dead);
+        plugin.getGameManager().broadcastTitle("death", dead, dead.getLocation());
 
         String deathMsg = cfg.getMsg("game.death");
         if (!deathMsg.isEmpty()) {

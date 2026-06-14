@@ -267,8 +267,8 @@ public class GameManager {
             boolean isWinner = isPlayerWinner(gp, winnerTeam);
             if (isWinner) {
                 sendTitleWithTiming(player,
-                    colorize(cfg.getConfig().getString("title.win.title", "&e&l大吉大利!你获胜了!")),
-                    colorize(cfg.getConfig().getString("title.win.subtitle", "&2&l" + winnerTeam + "方获胜!")),
+                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.title", "&e&l大吉大利!你获胜了!"), player)),
+                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.subtitle", "&2&l" + winnerTeam + "方获胜!"), player)),
                     cfg.getConfig().getInt("title.win.in", 20),
                     cfg.getConfig().getInt("title.win.stay", 80),
                     cfg.getConfig().getInt("title.win.out", 20)
@@ -280,8 +280,8 @@ public class GameManager {
                 }
             } else {
                 sendTitleWithTiming(player,
-                    colorize(cfg.getConfig().getString("title.lose.title", "&e&l很遗憾!你输了..")),
-                    colorize(cfg.getConfig().getString("title.lose.subtitle", "&2&l" + winnerTeam + "方获胜了..")),
+                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.title", "&e&l很遗憾!你输了.."), player)),
+                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.subtitle", "&2&l" + winnerTeam + "方获胜了.."), player)),
                     cfg.getConfig().getInt("title.lose.in", 20),
                     cfg.getConfig().getInt("title.lose.stay", 80),
                     cfg.getConfig().getInt("title.lose.out", 20)
@@ -736,16 +736,22 @@ public class GameManager {
             case ENDING: path = "scoreboard.ending"; break;
             default: path = "scoreboard.waiting";
         }
+
+        String gamingPath = path;
         String title = cfg.getConfig().getString(path + ".title", "");
         List<String> content = cfg.getConfig().getStringList(path + ".content");
 
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
             Player player = Bukkit.getPlayer(gp.getUuid());
             if (player == null) continue;
+            String usePath = gamingPath;
+            if (state == GameState.GAMING && !gp.isAlive()) {
+                usePath = "scoreboard.spectating";
+            }
 
-            String pTitle = colorize(MsgFormat.msg(title, player));
+            String pTitle = colorize(MsgFormat.msg(cfg.getConfig().getString(usePath + ".title", ""), player));
             List<String> pContent = new ArrayList<>();
-            for (String line : content) {
+            for (String line : cfg.getConfig().getStringList(usePath + ".content")) {
                 pContent.add(colorize(MsgFormat.msg(line, player)));
             }
 
@@ -795,10 +801,14 @@ public class GameManager {
     }
 
     public void broadcastTitle(String titleKey) {
-        broadcastTitle(titleKey, null);
+        broadcastTitle(titleKey, null, null);
     }
 
     public void broadcastTitle(String titleKey, Player eventPlayer) {
+        broadcastTitle(titleKey, eventPlayer, null);
+    }
+
+    public void broadcastTitle(String titleKey, Player eventPlayer, org.bukkit.Location eventLocation) {
         String path = "title." + titleKey;
         String title = cfg.getConfig().getString(path + ".title", "");
         String subtitle = cfg.getConfig().getString(path + ".subtitle", "");
@@ -809,8 +819,8 @@ public class GameManager {
             Player p = Bukkit.getPlayer(gp.getUuid());
             if (p != null) {
                 sendTitleWithTiming(p,
-                    colorize(MsgFormat.msg(title, p, eventPlayer)),
-                    colorize(MsgFormat.msg(subtitle, p, eventPlayer)),
+                    colorize(MsgFormat.msg(title, p, eventPlayer, eventLocation)),
+                    colorize(MsgFormat.msg(subtitle, p, eventPlayer, eventLocation)),
                     in, stay, out
                 );
             }
