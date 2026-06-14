@@ -39,7 +39,6 @@ public class GameManager {
     public GameState getState() { return state; }
     public GameMap getCurrentMap() { return currentMap; }
 
-    // ========== MAIN GAME LOOP ==========
     private void startMainLoop() {
         if (mainTaskId != -1) Bukkit.getScheduler().cancelTask(mainTaskId);
         mainTaskId = new BukkitRunnable() {
@@ -62,7 +61,6 @@ public class GameManager {
         }
     }
 
-    // ========== WAITING ==========
     public void startWaiting(String gameName) {
         currentMap = cfg.getMap(gameName);
         if (currentMap == null) {
@@ -92,7 +90,7 @@ public class GameManager {
         GamePlayer gp = cfg.getOrCreateGamePlayer(player.getUniqueId());
         player.setGameMode(GameMode.SURVIVAL);
         player.getInventory().clear();
-        // teleport to lobby
+
         if (currentMap != null && currentMap.getLobby() != null) {
             player.teleport(currentMap.getLobby());
         }
@@ -132,7 +130,6 @@ public class GameManager {
         updateScoreboard();
     }
 
-    // ========== STARTING ==========
     private void startCountdown() {
         state = GameState.STARTING;
         startCountdown = cfg.getConfig().getInt("starttime", 30);
@@ -151,7 +148,6 @@ public class GameManager {
         updateScoreboard();
     }
 
-    // ========== GAMING ==========
     private void startGame() {
         state = GameState.GAMING;
         gameCountdown = cfg.getConfig().getInt("gametime", 600);
@@ -159,7 +155,6 @@ public class GameManager {
         cfg.setGameTimer(gameCountdown);
         cfg.setGameStartTotalPlayers(cfg.getOnlinePlayers());
 
-        // cleanup corpses from last round
         Player anyPlayer = null;
         org.bukkit.World gameWorld = getGameWorld();
         for (org.bukkit.entity.Entity ent : gameWorld.getEntities()) {
@@ -172,7 +167,6 @@ public class GameManager {
             Bukkit.dispatchCommand(anyPlayer, "removecorpse 500");
         }
 
-        // assign colors & kits
         List<GamePlayer> playerList = new ArrayList<>(cfg.getAllGamePlayers().values());
         Collections.shuffle(playerList);
         List<Location> spawns = new ArrayList<>(currentMap.getSpawnPoints());
@@ -181,14 +175,13 @@ public class GameManager {
         List<String> availableKits = buildKitList(playerList.size());
         Collections.shuffle(availableKits);
 
-        // assign
         for (int i = 0; i < playerList.size(); i++) {
             GamePlayer gp = playerList.get(i);
             gp.setColorId(i + 1);
             if (i < availableKits.size()) {
                 gp.setKitId(availableKits.get(i));
             }
-            // teleport
+
             Player player = Bukkit.getPlayer(gp.getUuid());
             if (player != null && !spawns.isEmpty()) {
                 Location spawn = spawns.get(i % spawns.size());
@@ -196,7 +189,6 @@ public class GameManager {
             }
         }
 
-        // give items & setup
         for (GamePlayer gp : playerList) {
             Player player = Bukkit.getPlayer(gp.getUuid());
             if (player == null) continue;
@@ -209,10 +201,8 @@ public class GameManager {
             showRoleInfo(player, gp);
         }
 
-        // werewolf tab highlight
         setupWerewolfTeams();
 
-        // kit gt tasks
         scheduleKitTasks();
 
         broadcastMsg("started");
@@ -225,7 +215,6 @@ public class GameManager {
         cfg.setGameTimer(gameCountdown);
         emeraldTimer++;
 
-        // keep weather clear
         org.bukkit.World gameWorld = getGameWorld();
         if (gameWorld != null) {
             gameWorld.setStorm(false);
@@ -233,15 +222,11 @@ public class GameManager {
             gameWorld.setWeatherDuration(0);
         }
 
-        // emerald refresh
         int refreshInterval = cfg.getConfig().getInt("emerald-refresh", 10);
         if (emeraldTimer >= refreshInterval) {
             emeraldTimer = 0;
             spawnEmeralds();
         }
-
-        // kit gt countdowns
-        // handled via scheduled tasks
 
         updateScoreboard();
         checkWinCondition();
@@ -251,7 +236,6 @@ public class GameManager {
         }
     }
 
-    // ========== ENDING ==========
     private void endGame(String winnerTeam) {
         state = GameState.ENDING;
         cfg.setWinner(winnerTeam);
@@ -259,7 +243,6 @@ public class GameManager {
 
         boolean isLeaveWin = isLeaveWin();
 
-        // send titles & rewards
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
             Player player = Bukkit.getPlayer(gp.getUuid());
             if (player == null) continue;
@@ -286,7 +269,7 @@ public class GameManager {
                     cfg.getConfig().getInt("title.lose.stay", 80),
                     cfg.getConfig().getInt("title.lose.out", 20)
                 );
-                // show lose menu after title
+
                 Bukkit.getScheduler().runTaskLater(plugin, () -> openLoseMenu(player), 60L);
             }
         }
@@ -294,7 +277,6 @@ public class GameManager {
         broadcastMsg("win");
         startFireworkLoop();
 
-        // scoreboards show ending
         updateScoreboard();
     }
 
@@ -310,7 +292,7 @@ public class GameManager {
     private void handleRestart() {
         boolean fullRestart = cfg.getConfig().getBoolean("bungee.full-restart", false);
         if (fullRestart) {
-            // send all to lobby first
+
             String lobbyServer = cfg.getConfig().getString("bungee.lobby", "lobby");
             for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
                 Player player = Bukkit.getPlayer(gp.getUuid());
@@ -319,7 +301,7 @@ public class GameManager {
             new BukkitRunnable() {
                 @Override
                 public void run() { Bukkit.shutdown(); }
-            }.runTaskLater(plugin, 60L); // 3 sec
+            }.runTaskLater(plugin, 60L);
         } else {
             resetGame();
         }
@@ -345,7 +327,6 @@ public class GameManager {
         cfg.setWinner(null);
         state = GameState.WAITING;
 
-        // remove corpses from Corpse plugin (needs player position for radius)
         Player anyPlayer = null;
         org.bukkit.World gameWorld = getGameWorld();
         for (org.bukkit.entity.Entity ent : gameWorld.getEntities()) {
@@ -359,7 +340,6 @@ public class GameManager {
         }
     }
 
-    // ========== KIT ASSIGNMENT ==========
     private List<String> buildKitList(int playerCount) {
         List<String> kits = new ArrayList<>();
         ConfigurationSection kitCfg = cfg.getKitConfig();
@@ -392,7 +372,6 @@ public class GameManager {
         return kits;
     }
 
-    // ========== KIT GT TASKS ==========
     private void scheduleKitTasks() {
         String[] specialKits = {"werewolf", "hunter", "seer"};
         for (String kitId : specialKits) {
@@ -416,7 +395,6 @@ public class GameManager {
         }
     }
 
-    // ========== ITEM GIVING ==========
     private void giveBeforeStartItems(Player player) {
         List<String> items = cfg.getConfig().getStringList("item.beforestart");
         for (String entry : items) {
@@ -501,7 +479,6 @@ public class GameManager {
         int amount = sec.getInt("amount", 1);
         short data = (short) sec.getInt("data", 0);
 
-        // 书本直接用GameBook生成带内容的版本
         ItemStack item;
         if (mat == Material.WRITTEN_BOOK && itemId.startsWith("book")) {
             String bookName = sec.getString("name", "");
@@ -529,7 +506,6 @@ public class GameManager {
             meta.setLore(newLore);
         }
 
-        // enchant
         String enchStr = sec.getString("enchant", "");
         if (enchStr != null && !enchStr.isEmpty()) {
             for (String ench : enchStr.split(";")) {
@@ -544,12 +520,11 @@ public class GameManager {
             }
         }
 
-        // leather color
         if (meta instanceof LeatherArmorMeta && sec.contains("color")) {
             String colorStr = sec.getString("color", "");
             colorStr = colorize(MsgFormat.msg(colorStr, player));
             colorStr = colorStr.replace("§", "");
-            // try hex
+
             try {
                 int rgb = Integer.parseInt(colorStr.replace("#", ""), 16);
                 ((LeatherArmorMeta) meta).setColor(Color.fromRGB(rgb));
@@ -560,7 +535,6 @@ public class GameManager {
         return item;
     }
 
-    // ========== NAME TAG ==========
     private void hideNameTag(Player player) {
         org.bukkit.scoreboard.Scoreboard board = player.getScoreboard();
         org.bukkit.scoreboard.Team team = board.getTeam("wr_hide");
@@ -594,7 +568,6 @@ public class GameManager {
         }
     }
 
-    // ========== ROLE INFO ==========
     private void showRoleInfo(Player player, GamePlayer gp) {
         ConfigurationSection kitSec = cfg.getKitSection(gp.getKitId());
         if (kitSec == null) return;
@@ -608,11 +581,10 @@ public class GameManager {
         );
     }
 
-    // ========== EMERALDS ==========
     private void spawnEmeralds() {
         if (currentMap == null) return;
         for (Location loc : currentMap.getEmeraldSpawns()) {
-            // remove existing emeralds nearby
+
             for (org.bukkit.entity.Entity ent : loc.getWorld().getNearbyEntities(loc, 0.5, 0.5, 0.5)) {
                 if (ent.getType() == EntityType.DROPPED_ITEM) {
                     org.bukkit.entity.Item item = (org.bukkit.entity.Item) ent;
@@ -621,7 +593,7 @@ public class GameManager {
                     }
                 }
             }
-            // spawn new
+
             ItemStack emerald = buildItem("emerald", null);
             if (emerald != null) {
                 loc.getWorld().dropItemNaturally(loc, emerald);
@@ -629,7 +601,6 @@ public class GameManager {
         }
     }
 
-    // ========== FIREWORKS ==========
     private void startFireworkLoop() {
         fireworkTaskId = new BukkitRunnable() {
             int ticks = 0;
@@ -641,13 +612,13 @@ public class GameManager {
                     if (!gp.isAlive()) continue;
                     Player p = Bukkit.getPlayer(gp.getUuid());
                     if (p == null) continue;
-                    // only winners get fireworks
+
                     if (isPlayerWinner(gp, cfg.getWinner())) {
                         spawnFirework(p.getLocation());
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0L, 10L).getTaskId(); // 0.5 sec
+        }.runTaskTimer(plugin, 0L, 10L).getTaskId();
     }
 
     private void stopFireworkLoop() {
@@ -671,7 +642,6 @@ public class GameManager {
         fw.detonate();
     }
 
-    // ========== WIN CONDITION ==========
     private void checkWinCondition() {
         if (state != GameState.GAMING) return;
         boolean hasWerewolf = false;
@@ -686,8 +656,7 @@ public class GameManager {
     }
 
     private boolean isLeaveWin() {
-        // check if one side left (all dead by disconnect)
-        // if total alive == 0 on one side, it's a leave win
+
         int werewolfAlive = 0;
         int humanAlive = 0;
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
@@ -695,11 +664,7 @@ public class GameManager {
             if (gp.getKitId().equals("werewolf")) werewolfAlive++;
             else humanAlive++;
         }
-        // if one side has 0 alive and the game just ended, it could be leave
-        // we check if the dead players are actually online
-        // simpler: if any player was removed from players map (quit), it's leave
-        // Actually, handleQuit sets alive=false and removes. So we need another flag.
-        // For simplicity, check if any dead player is not online
+
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
             if (!gp.isAlive() && Bukkit.getPlayer(gp.getUuid()) == null) return true;
         }
@@ -712,7 +677,6 @@ public class GameManager {
         return !gp.getKitId().equals("werewolf");
     }
 
-    // ========== REWARDS ==========
     private void executeReward(Player player, String rewardPath) {
         List<String> rewards = cfg.getConfig().getStringList(rewardPath);
         for (String cmd : rewards) {
@@ -726,7 +690,6 @@ public class GameManager {
         }
     }
 
-    // ========== SCOREBOARD ==========
     private void updateScoreboard() {
         String path;
         switch (state) {
@@ -755,7 +718,6 @@ public class GameManager {
                 pContent.add(colorize(MsgFormat.msg(line, player)));
             }
 
-            // get or create scoreboard for player
             GameScoreboard sb = getOrCreateScoreboard(player, pTitle);
             sb.setTitle(pTitle);
             sb.updateLines(pContent);
@@ -769,7 +731,6 @@ public class GameManager {
         return scoreboards.computeIfAbsent(player.getUniqueId(), k -> new GameScoreboard(title));
     }
 
-    // ========== UTILITY ==========
     private org.bukkit.World getGameWorld() {
         if (currentMap != null && currentMap.getRegion() != null && !currentMap.getRegion().isEmpty()) {
             org.bukkit.World world = Bukkit.getWorld(currentMap.getRegion());
@@ -851,7 +812,6 @@ public class GameManager {
         BungeeUtil.sendToServer(player, lobby);
     }
 
-    // ========== MENU SYSTEM ==========
     public void openMenu(Player player, String menuKey) {
         ConfigurationSection menuSec = cfg.getMenuConfig().getConfigurationSection(menuKey);
         if (menuSec == null) return;
@@ -860,7 +820,6 @@ public class GameManager {
         org.bukkit.inventory.Inventory inv = Bukkit.createInventory(null, slot,
             ChatColor.translateAlternateColorCodes('&', title));
 
-        // fill close item
         ConfigurationSection closeSec = cfg.getMenuConfig().getConfigurationSection("close");
         if (closeSec != null) {
             Material closeMat = Material.matchMaterial(closeSec.getString("material", "STAINED_GLASS_PANE"));
@@ -872,7 +831,6 @@ public class GameManager {
             inv.setItem(slot - 1, closeItem);
         }
 
-        // fill empty with filler
         ConfigurationSection fillerSec = cfg.getMenuConfig().getConfigurationSection("filler");
         if (fillerSec != null) {
             Material fillMat = Material.matchMaterial(fillerSec.getString("material", "STAINED_GLASS_PANE"));
@@ -883,7 +841,6 @@ public class GameManager {
             }
         }
 
-        // shop items
         List<String> items = menuSec.getStringList("items");
         ConfigurationSection shopPrice = cfg.getMenuConfig().getConfigurationSection("shop.price");
         String priceLore = shopPrice != null ? shopPrice.getString("price", "&a价格&e&l%price%&r&a宝石") : "&a价格&e&l%price%&r&a宝石";
@@ -943,10 +900,9 @@ public class GameManager {
             ItemStack item = new ItemStack(mat != null ? mat : Material.LEATHER_CHESTPLATE);
             org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
 
-            // name
             String name = useSec.getString("name", "");
             name = name.replace("%player%", target.getName());
-            // replace color placeholders
+
             java.util.Map<?, ?> colorMap = cfg.getColorMap(String.valueOf(gp.getColorId()));
             String cText = colorMap != null ? String.valueOf(colorMap.containsKey("text") ? colorMap.get("text") : "") : "";
             String c16 = colorMap != null ? String.valueOf(colorMap.containsKey("color") ? colorMap.get("color") : "#FFFFFF") : "#FFFFFF";
@@ -964,7 +920,6 @@ public class GameManager {
             name = name.replace("%player.kit.describe%", kitDesc);
             meta.setDisplayName(colorize(name));
 
-            // lore
             java.util.List<String> lore = useSec.getStringList("lore");
             java.util.List<String> newLore = new java.util.ArrayList<>();
             for (String line : lore) {
@@ -979,7 +934,6 @@ public class GameManager {
             }
             meta.setLore(newLore);
 
-            // leather color
             if (meta instanceof org.bukkit.inventory.meta.LeatherArmorMeta) {
                 try {
                     int rgb = MsgFormat.hexToDec(c16);
@@ -987,7 +941,6 @@ public class GameManager {
                 } catch (Exception ignored) {}
             }
 
-            // enchant for known
             if (known && useSec.contains("enchant")) {
                 String enchStr = useSec.getString("enchant", "");
                 for (String ench : enchStr.split(";")) {
@@ -1007,7 +960,6 @@ public class GameManager {
             index++;
         }
 
-        // filler
         ConfigurationSection fillerSec = cfg.getMenuConfig().getConfigurationSection("filler");
         if (fillerSec != null) {
             Material fillMat = Material.matchMaterial(fillerSec.getString("material", "STAINED_GLASS_PANE"));
@@ -1016,7 +968,6 @@ public class GameManager {
             for (int i = index; i < slot; i++) inv.setItem(i, filler);
         }
 
-        // close
         ConfigurationSection closeSec = cfg.getMenuConfig().getConfigurationSection("close");
         if (closeSec != null) {
             Material closeMat = Material.matchMaterial(closeSec.getString("material", "STAINED_GLASS_PANE"));
@@ -1058,7 +1009,6 @@ public class GameManager {
         org.bukkit.inventory.Inventory inv = Bukkit.createInventory(null, slot,
             ChatColor.translateAlternateColorCodes('&', title));
 
-        // spec item
         ConfigurationSection specSec = loseSec.getConfigurationSection("spec");
         if (specSec != null) {
             Material mat = Material.matchMaterial(specSec.getString("material", "EYE_OF_ENDER"));
@@ -1069,7 +1019,6 @@ public class GameManager {
             inv.setItem(specSec.getInt("slot", 10), item);
         }
 
-        // again item
         ConfigurationSection againSec = loseSec.getConfigurationSection("again");
         if (againSec != null) {
             Material mat = Material.matchMaterial(againSec.getString("material", "SLIME_BALL"));
@@ -1080,7 +1029,6 @@ public class GameManager {
             inv.setItem(againSec.getInt("slot", 13), item);
         }
 
-        // leave item
         ConfigurationSection leaveSec = loseSec.getConfigurationSection("leave");
         if (leaveSec != null) {
             Material mat = Material.matchMaterial(leaveSec.getString("material", "BED"));
@@ -1091,7 +1039,6 @@ public class GameManager {
             inv.setItem(leaveSec.getInt("slot", 16), item);
         }
 
-        // filler
         ConfigurationSection fillerSec = cfg.getMenuConfig().getConfigurationSection("filler");
         if (fillerSec != null) {
             Material fillMat = Material.matchMaterial(fillerSec.getString("material", "STAINED_GLASS_PANE"));

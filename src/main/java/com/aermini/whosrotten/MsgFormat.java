@@ -15,7 +15,6 @@ public class MsgFormat {
 
         ConfigManager cfg = WhosRotten.getInstance().getConfigManager();
 
-        // basic counts
         int now = cfg.getOnlinePlayers();
         int total = cfg.getTotalPlayers();
         int max = cfg.getMaxPlayers();
@@ -28,7 +27,6 @@ public class MsgFormat {
         text = text.replace("%min%", String.valueOf(min));
         text = text.replace("%need%", String.valueOf(need));
 
-        // timer
         if (text.contains("%t.start%")) {
             text = text.replace("%t.start%", String.valueOf(cfg.getStartTimer()));
         }
@@ -42,42 +40,34 @@ public class MsgFormat {
             text = formatGameTime(text, gameSec);
         }
 
-        // winner
         if (text.contains("%winner%")) {
             text = text.replace("%winner%", cfg.getWinner() != null ? cfg.getWinner() : "");
         }
 
-        // map
         if (text.contains("%map%")) {
             text = text.replace("%map%", cfg.getMapDisplayName());
         }
 
-        // cooldown (from event context)
         if (text.contains("%cooldown%") && cfg.getEventCooldown() > 0) {
             text = text.replace("%cooldown%", String.valueOf(cfg.getEventCooldown()));
         }
 
-        // kit counts
         if (text.contains("%k.")) {
             text = replaceKitCounts(text, cfg);
         }
 
-        // player placeholders (event target)
         if (eventPlayer != null && text.contains("%player")) {
             text = replacePlayerHolders(text, "player", eventPlayer);
         }
 
-        // receiver placeholders (self)
         if (receiver != null && text.contains("%p")) {
             text = replacePlayerHolders(text, "p", receiver);
         }
 
-        // distance
         if (text.contains("%distance.") && eventLoc != null && receiver != null) {
             text = replaceDistance(text, receiver.getLocation(), eventLoc);
         }
 
-        // pos
         if (eventLoc != null) {
             if (text.contains("%posX%"))
                 text = text.replace("%posX%", formatDouble(eventLoc.getX()));
@@ -87,7 +77,6 @@ public class MsgFormat {
                 text = text.replace("%posZ%", formatDouble(eventLoc.getZ()));
         }
 
-        // config / message refs
         if (text.contains("%config.")) {
             text = replaceConfigRefs(text, cfg);
         }
@@ -98,17 +87,14 @@ public class MsgFormat {
         return text;
     }
 
-    // overload: no context
     public static String msg(String text) {
         return msg(text, null, null, null);
     }
 
-    // overload: receiver only
     public static String msg(String text, Player receiver) {
         return msg(text, receiver, null, null);
     }
 
-    // overload: receiver + event player
     public static String msg(String text, Player receiver, Player eventPlayer) {
         return msg(text, receiver, eventPlayer, null);
     }
@@ -147,7 +133,6 @@ public class MsgFormat {
         String colorId = gp != null ? String.valueOf(gp.getColorId()) : "0";
         String kitId = gp != null ? gp.getKitId() : "normal";
 
-        // %target.kit.xxx%
         String kitPrefix = "%" + target + ".kit.";
         if (text.contains(kitPrefix)) {
             ConfigurationSection kitSec = cfg.getKitSection(kitId);
@@ -162,7 +147,6 @@ public class MsgFormat {
             text = text.replace(kitPrefix + "task%", kitTask);
         }
 
-        // %target.color.xxx%
         String colorPrefix = "%" + target + ".color.";
         if (text.contains(colorPrefix)) {
             java.util.Map<?, ?> colorMap = cfg.getColorMap(colorId);
@@ -176,7 +160,6 @@ public class MsgFormat {
             text = text.replace(colorPrefix + "format%", cFormat);
         }
 
-        // %target% = player name
         text = text.replace("%" + target + "%", player.getName());
 
         return text;

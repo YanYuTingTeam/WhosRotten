@@ -30,17 +30,19 @@ public class GameEmeraldListener implements Listener {
         GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
         if (gp == null) return;
 
-        // emerald pickup
         if (item.getType() == Material.EMERALD) {
             event.setCancelled(true);
             event.getItem().remove();
-            gp.addEmerald(1);
+            ItemStack emeraldItem = plugin.getGameManager().buildItem("emerald", player);
+            if (emeraldItem != null) {
+                player.getInventory().addItem(emeraldItem);
+            }
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&a+1 宝石 &7(当前: &e" + gp.getEmeraldCount() + "&7)"));
+                "&a+1 宝石 &7(当前: &e" + (gp.getEmeraldCount() + 1) + "&7)"));
+            gp.addEmerald(1);
             return;
         }
 
-        // bow pickup (only civilians can pick up hunter's bow)
         if (item.getType() == Material.BOW && item.hasItemMeta()
                 && item.getItemMeta().hasDisplayName()
                 && item.getItemMeta().getDisplayName().contains("猎人的弓")) {
@@ -48,13 +50,13 @@ public class GameEmeraldListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            // civilian picks up bow -> becomes hunter
+
             event.setCancelled(true);
             event.getItem().remove();
             gp.setKitId("hunter");
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                 "&a&l你接替了猎人的使命! 你现在是猎人!"));
-            // give hunter items
+
             ItemStack bow = plugin.getGameManager().buildItem("bow", player);
             if (bow != null) player.getInventory().addItem(bow);
             ItemStack arrow = plugin.getGameManager().buildItem("arrow", player);
@@ -62,9 +64,8 @@ public class GameEmeraldListener implements Listener {
             return;
         }
 
-        // arrow pickup (allowed)
         if (item.getType() == Material.ARROW) {
-            return; // allow pickup
+            return;
         }
     }
 }

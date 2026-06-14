@@ -11,7 +11,7 @@ public class GamePlayer {
     private boolean alive;
     private int emeraldCount;
     private final Map<String, Long> cooldowns = new HashMap<>();
-    private final Map<String, Boolean> knownPlayers = new HashMap<>(); // for seer
+    private final Map<String, Boolean> knownPlayers = new HashMap<>();
 
     public GamePlayer(java.util.UUID uuid) {
         this.uuid = uuid;

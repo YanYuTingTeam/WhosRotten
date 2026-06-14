@@ -34,7 +34,6 @@ public class GameShopListener implements Listener {
         String title = event.getView().getTitle();
         if (title == null) return;
 
-        // close
         ItemStack currentItem = event.getCurrentItem();
         if (currentItem != null && currentItem.getType() == Material.STAINED_GLASS_PANE
                 && currentItem.hasItemMeta() && currentItem.getItemMeta().hasDisplayName()) {
@@ -46,21 +45,18 @@ public class GameShopListener implements Listener {
             }
         }
 
-        // shop menus
         if (title.contains("[商店]")) {
             event.setCancelled(true);
             handleShopClick(player, event.getRawSlot(), event.getCurrentItem());
             return;
         }
 
-        // seer menu
         if (title.contains("查验身份") || title.contains("选择")) {
             event.setCancelled(true);
             handleSeerClick(player, event.getRawSlot(), event.getCurrentItem());
             return;
         }
 
-        // lose menu (ending)
         if (title.contains("游戏结束")) {
             event.setCancelled(true);
             handleLoseMenuClick(player, event.getRawSlot());
@@ -70,12 +66,11 @@ public class GameShopListener implements Listener {
 
     private void handleShopClick(Player player, int slot, ItemStack clicked) {
         if (clicked == null || clicked.getType() == Material.AIR) return;
-        if (clicked.getType() == Material.STAINED_GLASS_PANE) return; // filler/close
+        if (clicked.getType() == Material.STAINED_GLASS_PANE) return;
 
         GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
         if (gp == null) return;
 
-        // find item in shop config by display name match
         String shopKey = findShopKey(player);
         if (shopKey == null) return;
 
@@ -92,7 +87,6 @@ public class GameShopListener implements Listener {
 
             if (itemSlot != slot) continue;
 
-            // check emerald
             if (!gp.removeEmerald(price)) {
                 String noMoney = cfg.getMsg("game.nomoney");
                 if (!noMoney.isEmpty()) {
@@ -101,13 +95,11 @@ public class GameShopListener implements Listener {
                 return;
             }
 
-            // give item
             ItemStack item = plugin.getGameManager().buildItem(itemId, player);
             if (item != null) {
                 player.getInventory().addItem(item);
             }
 
-            // update emerald display in inventory title or just close
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                 "&a购买成功! &7剩余宝石: &e" + gp.getEmeraldCount()));
             break;
@@ -129,10 +121,9 @@ public class GameShopListener implements Listener {
             return;
         }
 
-        // find target player by item name
         if (clicked.hasItemMeta() && clicked.getItemMeta().hasDisplayName()) {
             String name = ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
-            // format: [颜色]玩家名 - extract player name
+
             String targetName = null;
             if (name.contains("]")) {
                 targetName = name.substring(name.indexOf("]") + 1);
@@ -145,17 +136,14 @@ public class GameShopListener implements Listener {
             GamePlayer targetGp = cfg.getGamePlayer(target.getUniqueId());
             if (targetGp == null) return;
 
-            // mark as known
             seerGp.setKnown(target.getUniqueId(), true);
 
-            // send seer result
             String seerMsg = cfg.getMsg("item.seer");
             if (!seerMsg.isEmpty()) {
                 String formatted = MsgFormat.msg(seerMsg, player, target);
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&', formatted));
             }
 
-            // broadcast to all
             String broadcastMsg = cfg.getMsg("kit.seer");
             if (!broadcastMsg.isEmpty()) {
                 for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
@@ -165,11 +153,10 @@ public class GameShopListener implements Listener {
                             MsgFormat.msg(broadcastMsg, p, target)));
                     }
                 }
-                // seer title
+
                 plugin.getGameManager().sendAllTitle("seer", target);
             }
 
-            // set cooldown
             ConfigurationSection seerSec = cfg.getItemSection("seer");
             long cd = seerSec != null ? seerSec.getLong("cd", 150000) : 150000;
             seerGp.setCooldown("seer", System.currentTimeMillis() + cd);
@@ -187,7 +174,7 @@ public class GameShopListener implements Listener {
         int leaveSlot = loseSec.getInt("leave.slot", 16);
 
         if (slot == specSlot) {
-            // continue spectating
+
             player.closeInventory();
         } else if (slot == againSlot) {
             player.closeInventory();
@@ -199,7 +186,7 @@ public class GameShopListener implements Listener {
     }
 
     private String findShopKey(Player player) {
-        // check which shop the player opened based on their kit
+
         GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
         if (gp == null) return "normal";
         if (gp.getKitId().equals("werewolf")) return "werewolf";

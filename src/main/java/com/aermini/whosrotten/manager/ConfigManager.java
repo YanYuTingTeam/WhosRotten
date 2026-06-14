@@ -18,7 +18,6 @@ public class ConfigManager {
     private final Map<String, GameMap> maps = new HashMap<>();
     private final Map<UUID, GamePlayer> players = new HashMap<>();
 
-    // game state references
     private String currentGameName;
     private int startTimer;
     private int gameTimer;
@@ -78,7 +77,6 @@ public class ConfigManager {
         }
     }
 
-    // save game.yml spawns/lobby/emeralds back to file
     public void saveMapData(GameMap map) {
         FileConfiguration gameYml = configs.get("game.yml");
         String base = "maps." + map.getGameName();
@@ -146,15 +144,13 @@ public class ConfigManager {
         List<Map<?, ?>> colors = configs.get("config.yml").getMapList("colors");
         for (Map<?, ?> c : colors) {
             if (String.valueOf(c.get("id")).equals(colorId)) {
-                // convert to ConfigurationSection-like access
-                // we'll just return null and use map directly
+
                 return null;
             }
         }
         return null;
     }
 
-    // color lookup by id (returns map)
     public Map<?, ?> getColorMap(String colorId) {
         List<Map<?, ?>> colors = configs.get("config.yml").getMapList("colors");
         for (Map<?, ?> c : colors) {

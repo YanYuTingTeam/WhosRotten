@@ -35,7 +35,6 @@ public class GameItemProtectListener implements Listener {
         ItemStack current = event.getCurrentItem();
         ItemStack cursor = event.getCursor();
 
-        // allow in shop/seer menus (handled by GameShopListener)
         String title = event.getView().getTitle();
         if (title != null && (title.contains("[商店]") || title.contains("查验") || title.contains("游戏结束"))) return;
 
@@ -47,7 +46,7 @@ public class GameItemProtectListener implements Listener {
             event.setCancelled(true);
             return;
         }
-        // hotbar key swap
+
         if (event.getClick() == org.bukkit.event.inventory.ClickType.NUMBER_KEY) {
             ItemStack hotbarItem = event.getWhoClicked().getInventory().getItem(event.getHotbarButton());
             if (hotbarItem != null && hotbarItem.getType() != Material.AIR && isProtected(hotbarItem, (Player) event.getWhoClicked())) {
@@ -87,12 +86,12 @@ public class GameItemProtectListener implements Listener {
             ConfigurationSection sec = items.getConfigurationSection(key);
             if (sec == null || !sec.contains("can-move")) continue;
             if (sec.getBoolean("can-move", true)) continue;
-            // compare by material as primary check (handles placeholder names like %p.color.text%)
+
             String cfgMatName = sec.getString("material", "");
             if (cfgMatName != null && !cfgMatName.isEmpty() && item.getType() == Material.matchMaterial(cfgMatName)) {
                 return true;
             }
-            // fallback: compare by display name
+
             String cfgName = sec.getString("name", "");
             if (cfgName != null && !cfgName.isEmpty()) {
                 String strippedCfg = ChatColor.stripColor(cfgName);

@@ -32,7 +32,6 @@ public class GameCombatListener implements Listener {
         this.cfg = plugin.getConfigManager();
     }
 
-    // block all non-PvP damage (natural causes, fall, fire, etc.)
     @EventHandler(priority = EventPriority.MONITOR)
     public void onNaturalDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
@@ -40,7 +39,6 @@ public class GameCombatListener implements Listener {
         event.setCancelled(true);
     }
 
-    // PvP combat handler
     @EventHandler(priority = EventPriority.LOWEST)
     public void onDamage(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
@@ -52,7 +50,6 @@ public class GameCombatListener implements Listener {
         Player damaged = (Player) event.getEntity();
         Player attacker = null;
 
-        // fireball
         if (event.getDamager() instanceof SmallFireball) {
             SmallFireball fireball = (SmallFireball) event.getDamager();
             if (fireball.getShooter() instanceof Player) {
@@ -65,12 +62,11 @@ public class GameCombatListener implements Listener {
             return;
         }
 
-        // direct player attack (melee)
         if (event.getDamager() instanceof Player) {
             attacker = (Player) event.getDamager();
             event.setCancelled(true);
             if (attacker.equals(damaged)) return;
-            // only werewolf can melee kill
+
             GamePlayer gpAttacker = cfg.getGamePlayer(attacker.getUniqueId());
             if (gpAttacker != null && gpAttacker.getKitId().equals("werewolf")) {
                 handleKill(damaged, attacker);
@@ -78,7 +74,6 @@ public class GameCombatListener implements Listener {
             return;
         }
 
-        // projectile (arrow etc.)
         if (event.getDamager() instanceof Projectile) {
             Projectile proj = (Projectile) event.getDamager();
             if (proj.getShooter() instanceof Player) {
@@ -92,7 +87,6 @@ public class GameCombatListener implements Listener {
         handleKill(damaged, attacker);
     }
 
-    // prevent hunger loss
     @EventHandler
     public void onFoodChange(FoodLevelChangeEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
@@ -176,6 +170,6 @@ public class GameCombatListener implements Listener {
         if (gpDamaged == null || gpAttacker == null) return;
         if (!gpDamaged.isAlive()) return;
 
-        damaged.setHealth(0); // trigger death event
+        damaged.setHealth(0);
     }
 }

@@ -22,9 +22,8 @@ public class BungeeUtil {
 
     public static void sendEvent(Player player, String eventName, String... params) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("WhosRotten"); // 使用自定义 subchannel，避免消息显示在聊天框
+        out.writeUTF("WhosRotten");
 
-        // 构建消息内容: event=eventName,param1=value1,param2=value2,...
         StringBuilder message = new StringBuilder("event=" + eventName);
         for (String param : params) {
             message.append(",").append(param);

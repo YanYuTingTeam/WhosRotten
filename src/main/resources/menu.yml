@@ -21,7 +21,7 @@ shop:
     slot: 27
     items:
       - 10,teleport,3
-      - 13,tracker,3
+      - 13,discover,3
       - 16,bow,6
 
 item:

@@ -24,7 +24,6 @@ public class WhosRotten extends JavaPlugin {
         configManager = new ConfigManager(this);
         gameManager = new GameManager(this);
 
-        // register listeners
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
         getServer().getPluginManager().registerEvents(new GameCombatListener(this), this);
         getServer().getPluginManager().registerEvents(new GameItemListener(this), this);
@@ -32,10 +31,8 @@ public class WhosRotten extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GameEmeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new GameItemProtectListener(this), this);
 
-        // register command
         getCommand("whosrotten").setExecutor(new com.aermini.whosrotten.wrCommand(this));
 
-        // start waiting with first map
         String defaultMap = "default";
         if (!configManager.getAllMaps().isEmpty()) {
             defaultMap = configManager.getAllMaps().iterator().next().getGameName();
