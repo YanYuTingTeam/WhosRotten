@@ -50,7 +50,7 @@ public class PlayerConnectionListener implements Listener {
         }
         if (format.isEmpty()) format = "&f<%player%&r&f> &f<message>";
 
-        String msg = format
+        String msg = MsgFormat.msg(format, player, player)
                 .replace("%player%", player.getName())
                 .replace("<message>", event.getMessage());
         msg = ChatColor.translateAlternateColorCodes('&', msg);
