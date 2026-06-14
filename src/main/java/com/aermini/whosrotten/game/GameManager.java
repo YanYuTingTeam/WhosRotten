@@ -299,6 +299,7 @@ public class GameManager {
         }
 
         broadcastMsg("win");
+        broadcastMsg("ending");
         startFireworkLoop();
 
         updateScoreboard();
