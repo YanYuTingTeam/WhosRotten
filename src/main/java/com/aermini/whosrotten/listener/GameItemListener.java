@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class GameItemListener implements Listener {
@@ -247,19 +248,25 @@ public class GameItemListener implements Listener {
         }
 
         String msg = cfg.getMsg("item.discover");
-        String formatted = MsgFormat.msg(msg, player, nearest, nearest.getLocation());
-        player.sendMessage(formatted);
+        String formatted = ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(msg, player, nearest, nearest.getLocation()));
+        plugin.getGameManager().sendActionBar(player, formatted);
 
         ConfigurationSection sec = cfg.getItemSection("discover");
         long cd = sec != null ? sec.getLong("cd", 10) * 1000 : 10000;
         gp.setCooldown("discover", System.currentTimeMillis() + cd);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        Player targetPlayer = nearest;
+        int taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            plugin.getGameManager().removeTrackerTask(player.getUniqueId());
+            if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) return;
+            if (!player.isOnline()) return;
             String timeoutMsg = cfg.getMsg("item.discover-timeout");
             if (!timeoutMsg.isEmpty()) {
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(timeoutMsg, player)));
+                plugin.getGameManager().sendActionBar(player,
+                    ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(timeoutMsg, player)));
             }
-        }, 40L);
+        }, 40L).getTaskId();
+        plugin.getGameManager().putTrackerTask(player.getUniqueId(), taskId);
     }
 
     private void handleTracker(Player player) {
@@ -279,12 +286,48 @@ public class GameItemListener implements Listener {
             }
         }
 
-        if (nearest != null) {
-            player.setCompassTarget(nearest.getLocation());
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(cfg.getMsg("item.tracker"))));
-        } else {
+        if (nearest == null) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&c附近没有平民"));
+            return;
         }
+
+        plugin.getGameManager().removeTrackerTask(player.getUniqueId());
+
+        Player targetPlayer = nearest;
+
+        int taskId = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) {
+                    cancel(); plugin.getGameManager().removeTrackerTask(player.getUniqueId()); return;
+                }
+                if (!player.isOnline() || !targetPlayer.isOnline()) {
+                    cancel(); plugin.getGameManager().removeTrackerTask(player.getUniqueId()); return;
+                }
+                GamePlayer tg = cfg.getGamePlayer(targetPlayer.getUniqueId());
+                if (tg == null || !tg.isAlive()) {
+                    cancel(); plugin.getGameManager().removeTrackerTask(player.getUniqueId());
+                    consumeItem(player, findTrackerItem(player));
+                    return;
+                }
+                String msg = cfg.getMsg("item.tracker");
+                String formatted = ChatColor.translateAlternateColorCodes('&',
+                    MsgFormat.msg(msg, player, targetPlayer, targetPlayer.getLocation()));
+                plugin.getGameManager().sendActionBar(player, formatted);
+            }
+        }.runTaskTimer(plugin, 0L, 20L).getTaskId();
+        plugin.getGameManager().putTrackerTask(player.getUniqueId(), taskId);
+    }
+
+    private ItemStack findTrackerItem(Player player) {
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() == Material.COMPASS
+                    && item.hasItemMeta() && item.getItemMeta().hasDisplayName()
+                    && item.getItemMeta().getDisplayName().contains("玩家探测器")) {
+                return item;
+            }
+        }
+        return null;
     }
 
     private void handleSeerItem(Player player) {

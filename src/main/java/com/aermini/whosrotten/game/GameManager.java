@@ -312,6 +312,7 @@ public class GameManager {
         stopFireworkLoop();
         for (int id : kitTasks) Bukkit.getScheduler().cancelTask(id);
         kitTasks.clear();
+        cancelAllTrackerTasks();
 
         if (cfg.getConfig().getBoolean("endclear", true)) {
             for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
@@ -726,6 +727,7 @@ public class GameManager {
     }
 
     private final Map<UUID, GameScoreboard> scoreboards = new HashMap<>();
+    private final Map<UUID, Integer> trackerTasks = new HashMap<>();
 
     private GameScoreboard getOrCreateScoreboard(Player player, String title) {
         return scoreboards.computeIfAbsent(player.getUniqueId(), k -> new GameScoreboard(title));
@@ -1089,6 +1091,51 @@ public class GameManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendActionBar(Player player, String text) {
+        try {
+            String pkgName = player.getClass().getPackage().getName();
+            String nmsVersion = null;
+            for (String part : pkgName.split("\\.")) {
+                if (part.matches("v\\d+_\\d+_R\\d+")) { nmsVersion = part; break; }
+            }
+            if (nmsVersion == null) return;
+            Class<?> chatSerializer = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent$ChatSerializer");
+            Class<?> chatComponent = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent");
+            Class<?> packetClass = Class.forName("net.minecraft.server." + nmsVersion + ".PacketPlayOutChat");
+
+            Object component = chatSerializer.getMethod("a", String.class)
+                .invoke(null, "{\"text\":\"" + text.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}");
+            Object packet = packetClass.getConstructor(chatComponent, byte.class)
+                .newInstance(component, (byte) 2);
+
+            Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
+            Object connection = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
+            Class<?> basePacket = Class.forName("net.minecraft.server." + nmsVersion + ".Packet");
+            java.lang.reflect.Method sendPacket = connection.getClass().getMethod("sendPacket", basePacket);
+            sendPacket.invoke(connection, packet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void putTrackerTask(UUID uuid, int taskId) {
+        Integer old = trackerTasks.remove(uuid);
+        if (old != null) Bukkit.getScheduler().cancelTask(old);
+        trackerTasks.put(uuid, taskId);
+    }
+
+    public void removeTrackerTask(UUID uuid) {
+        Integer old = trackerTasks.remove(uuid);
+        if (old != null) Bukkit.getScheduler().cancelTask(old);
+    }
+
+    public void cancelAllTrackerTasks() {
+        for (int taskId : trackerTasks.values()) {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+        trackerTasks.clear();
     }
 
     private String colorize(String text) {

@@ -37,7 +37,7 @@ item:
     player_known: # 已查验的玩家.
       material: LEATHER_CHESTPLATE
       color: '%player.color.16%'
-      enchant: RESPIRATION,1 # 附魔, 格式  ID,level;ID,level
+      enchant: respiration,1 # 附魔, 格式  ID,level;ID,level
       name: '&f&o[&r&f&l%player.color.text%]%player%'
       lore:
         - '&a&l他是..?%player.kit.format%!'

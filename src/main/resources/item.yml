@@ -38,7 +38,7 @@ normalbow:
 bow:
   name: '猎人的弓'
   material: BOW
-  enchant: INFINITY,1
+  enchant: infinity,1
 
 arrow:
   material: ARROW
@@ -51,7 +51,7 @@ shop:
 
 discover:
   name: '&6狼人探测器&e&l&n(右键开启，持续10秒，30秒CD)'
-  cd: 10
+  cd: 10000
   material: COMPASS
   lore:
     - '&a探测最近的狼人'
@@ -78,6 +78,7 @@ fakearrow:
     - '&a购买以后可以更好的伪装'
 
 seer:
+  material: BLAZE_ROD
   name: '&b&l预言魔杖&e&l&n(右键发动查验技能，150秒cd)'
   menu: item.seer
   cd: 150000
