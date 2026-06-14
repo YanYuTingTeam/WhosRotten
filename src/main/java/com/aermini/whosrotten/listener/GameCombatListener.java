@@ -69,7 +69,12 @@ public class GameCombatListener implements Listener {
 
             GamePlayer gpAttacker = cfg.getGamePlayer(attacker.getUniqueId());
             if (gpAttacker != null && gpAttacker.getKitId().equals("werewolf")) {
-                handleKill(damaged, attacker);
+                ItemStack inHand = attacker.getItemInHand();
+                if (inHand != null && inHand.getType() == Material.DIAMOND_SWORD
+                        && inHand.hasItemMeta() && inHand.getItemMeta().hasDisplayName()
+                        && inHand.getItemMeta().getDisplayName().contains("狼人的爪子")) {
+                    handleKill(damaged, attacker);
+                }
             }
             return;
         }
