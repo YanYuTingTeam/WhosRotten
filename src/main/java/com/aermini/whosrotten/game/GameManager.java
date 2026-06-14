@@ -122,6 +122,11 @@ public class GameManager {
         } else {
             cfg.removeGamePlayer(uuid);
             broadcastMsg("leave", player);
+            if (state == GameState.STARTING && cfg.getOnlinePlayers() < cfg.getMinPlayers()) {
+                state = GameState.WAITING;
+                startCountdown = 0;
+                broadcastMsg("countcancel");
+            }
         }
 
         if (cfg.getOnlinePlayers() == 0 && state != GameState.WAITING) {
@@ -137,6 +142,13 @@ public class GameManager {
     }
 
     private void tickStarting() {
+        if (cfg.getOnlinePlayers() < cfg.getMinPlayers()) {
+            state = GameState.WAITING;
+            startCountdown = 0;
+            broadcastMsg("countcancel");
+            updateScoreboard();
+            return;
+        }
         startCountdown--;
         cfg.setStartTimer(startCountdown);
         if (startCountdown <= 0) {
