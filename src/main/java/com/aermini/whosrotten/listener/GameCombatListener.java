@@ -21,11 +21,15 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class GameCombatListener implements Listener {
     private final WhosRotten plugin;
     private final ConfigManager cfg;
+    private final Map<UUID, org.bukkit.Location> deathLocations = new HashMap<>();
 
     public GameCombatListener(WhosRotten plugin) {
         this.plugin = plugin;
@@ -116,6 +120,7 @@ public class GameCombatListener implements Listener {
         GamePlayer gp = cfg.getGamePlayer(dead.getUniqueId());
         if (gp == null) return;
         gp.setAlive(false);
+        deathLocations.put(dead.getUniqueId(), dead.getLocation().clone());
 
         if (gp.getKitId().equals("hunter")) {
             ItemStack bow = plugin.getGameManager().buildItem("bow", dead);
@@ -164,6 +169,11 @@ public class GameCombatListener implements Listener {
         if (gp == null) return;
         if (!gp.isAlive()) {
             player.setGameMode(org.bukkit.GameMode.SPECTATOR);
+            org.bukkit.Location deathLoc = deathLocations.remove(player.getUniqueId());
+            if (deathLoc != null) {
+                event.setRespawnLocation(deathLoc);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(deathLoc), 1L);
+            }
         }
     }
 

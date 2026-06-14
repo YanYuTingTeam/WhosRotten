@@ -113,10 +113,22 @@ public class GameManager {
         if (gp == null) return;
 
         if (state == GameState.GAMING) {
+            String quitKit = gp.getKitId();
             gp.setAlive(false);
             cfg.removeGamePlayer(uuid);
+            quitDuringGame.put(uuid, quitKit);
             broadcastMsg("leave", player);
-            checkWinCondition();
+            boolean noSameTeamLeft = true;
+            for (GamePlayer other : cfg.getAllGamePlayers().values()) {
+                if (other.getKitId().equals(quitKit)) {
+                    noSameTeamLeft = false;
+                    break;
+                }
+            }
+            if (noSameTeamLeft) {
+                if (quitKit.equals("werewolf")) endGame("人类");
+                else endGame("狼人");
+            }
         } else if (state == GameState.ENDING) {
             cfg.removeGamePlayer(uuid);
         } else {
@@ -338,6 +350,7 @@ public class GameManager {
         }
         cfg.getAllGamePlayers().clear();
         cfg.setWinner(null);
+        quitDuringGame.clear();
         state = GameState.WAITING;
 
         Player anyPlayer = null;
@@ -669,17 +682,21 @@ public class GameManager {
     }
 
     private boolean isLeaveWin() {
-
-        int werewolfAlive = 0;
-        int humanAlive = 0;
+        boolean hasWerewolf = false;
+        boolean hasHuman = false;
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
-            if (!gp.isAlive()) continue;
-            if (gp.getKitId().equals("werewolf")) werewolfAlive++;
-            else humanAlive++;
+            if (gp.getKitId().equals("werewolf")) hasWerewolf = true;
+            else hasHuman = true;
         }
-
-        for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
-            if (!gp.isAlive() && Bukkit.getPlayer(gp.getUuid()) == null) return true;
+        if (!hasWerewolf) {
+            for (Map.Entry<UUID, String> entry : quitDuringGame.entrySet()) {
+                if (entry.getValue().equals("werewolf")) return true;
+            }
+        }
+        if (!hasHuman) {
+            for (Map.Entry<UUID, String> entry : quitDuringGame.entrySet()) {
+                if (!entry.getValue().equals("werewolf")) return true;
+            }
         }
         return false;
     }
@@ -737,6 +754,8 @@ public class GameManager {
             sb.send(player);
         }
     }
+
+    private final Map<UUID, String> quitDuringGame = new HashMap<>();
 
     private final Map<UUID, GameScoreboard> scoreboards = new HashMap<>();
     private final Map<UUID, Integer> trackerTasks = new HashMap<>();
