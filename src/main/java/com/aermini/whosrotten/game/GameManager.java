@@ -83,10 +83,6 @@ public class GameManager {
     }
 
     public void handleJoin(Player player) {
-        if (state != GameState.WAITING && state != GameState.STARTING) {
-            player.kickPlayer("游戏已开始");
-            return;
-        }
         GamePlayer gp = cfg.getOrCreateGamePlayer(player.getUniqueId());
         player.setGameMode(GameMode.SURVIVAL);
         player.getInventory().clear();
