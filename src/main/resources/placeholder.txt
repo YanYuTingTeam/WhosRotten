@@ -1,0 +1,40 @@
+%now% 剩余玩家数量
+%total% 总参与游戏人数
+%max% 最大游戏人数
+%min% 最小游戏人数
+%need% 距开始需要玩家人数
+
+%<target>.kit.text% 目标的身份: 纯文本
+%<target>.kit.format% 目标的身份: 格式化后文本
+%<target>.kit.describe% 目标的身份: 描述(describe)
+%<target>.kit.task% 目标的身份: 任务(task)
+%<target>.color.text% 目标的颜色: 纯文本
+%<target>.color.16% 目标的颜色: 16进制颜色 (带#)
+%<target>.color.10% 目标的颜色: 10进制颜色
+%<target>.color.format% 目标的颜色: 格式化后文本
+%<target>% 目标的玩家名
+其中，如果<target>为 player 则视事件中的目标玩家为主体.
+如果<target>为 p 则视参与游戏的玩家本人为主体.
+
+%t.start% 开始倒计时
+%t.game% 游戏倒计时
+%t.game.sec% 游戏倒计时
+%t.game.format#<format>% 游戏倒计时 格式化为<format>.
+  <format> 允许的内容: hh:mm:ss, mm:ss, s(秒数), m:s(不强制两位的时间, 比如 13:4.)
+
+%cooldown% 事件中的道具/技能冷却剩余秒数
+%map% 游戏地图名(display名)
+%distance.<t>% 事件中的位置距离玩家的距离. <t>代表保留几位小数
+%winner% 获胜方 (值只有 人类 狼人)
+%posX% %posY% %posZ% 分别为事件中的位置x y z
+%config.<t>% config中<t>的配置
+%message.<t>% message中<t>的配置
+
+%k.werewolf.gt% 狼人获得道具倒计时
+%k.werewolf.count% 狼人剩余人数
+%k.hunter.gt% 猎人获得道具倒计时
+%k.hunter.count% 猎人剩余人数
+%k.seer.gt% 预言家获得道具倒计时
+%k.seer.count% 预言家剩余人数
+%k.normal.count% 平民剩余人数
+%k.unwolf.count% 非狼人剩余人数

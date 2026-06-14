@@ -1,0 +1,15 @@
+name: WhosRotten
+main: com.aermini.whosrotten.WhosRotten
+version: 1.0.0
+author: AerMini
+
+commands:
+  whosrotten:
+    aliases: [wr]
+    permission: whosrotten.use
+
+permissions:
+  whosrotten.use:
+    default: true
+  whosrotten.admin:
+    default: op

@@ -1,0 +1,191 @@
+scoreboard:
+  waiting:
+    title: '&c[狼人杀Ⅱ]'
+    content:
+      - '&f'
+      - '&f     &6等待中...'
+      - '&f'
+      - '&f房间人数: &a%now%&f/&a%max%'
+      - '&f还需要:&e&l%need%&r&f个玩家'
+      - '&f'
+      - '&f  &c✿&f花雨庭原创'
+  starting:
+    title: '&c[狼人杀Ⅱ]'
+    content:
+      - '&f'
+      - '&f     &a即将开始...'
+      - '&f'
+      - '&f房间人数: &a%now%&f/&a%max%'
+      - '&f'
+      - '&f  &c✿&f花雨庭原创'
+  gaming:
+    title: '&c[狼人杀Ⅱ]'
+    content:
+      - '&f'
+      - '&f职业: %p.kit.format%'
+      - '&f颜色: &f&l%p.color.text%'
+      - '&f'
+      - '&f剩余狼人: &c&l%k.werewolf.count%'
+      - '&f剩余人类: &a&l%k.unwolf.count%'
+      - '&f'
+      - '&7--------------'
+      - '&f   &a即将开始...'
+      - '&f  距离人类获胜'
+      - '&f      &f:&c&n%t.game.format#m:s%'
+      - '&f'
+      - '&f房间人数: &a%total%&f/&a%max%'
+      - '&f'
+      - '&f地图: &a%map%'
+      - '&f  &c✿&f花雨庭原创'
+  spectating:
+    title: '&c[狼人杀Ⅱ]'
+    content:
+      - '&f  &4&l你已经死了!'
+      - '&f颜色: &f&l%p.color.text%'
+      - '&f'
+      - '&f剩余狼人: &c&l%k.werewolf.count%'
+      - '&f剩余人类: &a&l%k.unwolf.count%'
+      - '&f'
+      - '&7--------------'
+      - '&f   &a即将开始...'
+      - '&f  距离人类获胜'
+      - '      &f:&c&n%t.game.format#m:s%'
+      - '&f'
+      - '&f房间人数: &a%total%&f/&a%max%'
+      - '&f'
+      - '&f地图: &a%map%'
+      - '&f  &c✿&f花雨庭原创'
+  ending:
+    title: '&c[狼人杀Ⅱ]'
+    content:
+      - '&f剩余人类: &a&l%k.unwolf.count%'
+      - '&7--------------'
+      - '&f'
+      - '&f&l   - 获胜方 -'
+      - '&a   即将开始...'
+      - '   &e&l%winner%'
+      - '&f  距离人类获胜'
+      - '&f  :&c&n%t.game.format#m:s%'
+      - '&f'
+      - '&f'
+      - '&f房间人数: &a%total%&f/&a%max%'
+      - '&f'
+      - '&f下一局&2&l%t.game.format#m:s%&r&f秒后'
+      - '&f  &c✿&f花雨庭原创'
+      - '&f地图: &a%map%'
+
+title:
+  countstart:
+    title: '&d&l%t.start%'
+    subtitle: '&e&l游戏即将开始..'
+    in: 20
+    stay: 60
+    out: 20
+  death:
+    title: '&f&l%player.color.text%&e&l人类死亡!!'
+    subtitle: '&2&l坐标:&c&l(%posX%,%posY%,%posZ%)&2&l，尸体距离你&c&l%distance.1%&2&l米!'
+    in: 20
+    stay: 60
+    out: 20
+  started:
+    title: '&f本局你是..&l%p.kit.format%!'
+    subtitle: '&c%p.kit.describe%'
+  getitem:
+    title: '%p.kit.task%'
+    subtitle: ''
+    in: 20
+    stay: 60
+    out: 20
+  win:
+    title: '&e&l大吉大利!你获胜了!'
+    subtitle: '&2&l%winner%方获胜!'
+    in: 20
+    stay: 80
+    out: 20
+  lose:
+    title: '&e&l很遗憾!你输了..'
+    subtitle: '&2&l%winner%方获胜了..'
+    in: 20
+    stay: 80
+    out: 20
+  seer:
+    title: '&e&l预言家发动了技能'
+    subtitle: '&f某个玩家身份被查验，他是..%player.kit.format%!!'
+
+starttime: 30
+endclear: true # 游戏结束后清背包
+emerald-refresh: 20 # 绿宝石刷新间隔
+gametime: 900
+
+reward:
+  winner: # 实际上是存活的玩家
+    - '[CMD] rme add %player% bal 20'
+    - '[CMD] axp %player% addxp 150'
+    - '[MSG] &f+ &7&l20.0 &r&7银币'
+    - '[MSG] &f+ &a&l150 &r&2经验'
+  died:
+    - '[CMD] rme add %player% bal 10'
+    - '[CMD] axp %player% addxp 50'
+    - '[MSG] &f+ &7&l10.0 &r&7银币'
+    - '[MSG] &f+ &a&l50 &r&2经验'
+  leave:
+    - '[CMD] rme add %player% bal 10'
+    - '[CMD] axp %player% addxp 100'
+    - '[MSG] &f+ &7&l10.0 &r&7银币'
+    - '[MSG] &f+ &a&l100 &r&2经验'
+
+item:
+  beforestart: # 游戏开始前所有玩家统一获得的物品
+    - 0,book # slot, item
+    - 8,leave
+  gaming: # 游戏开始后所有玩家统一获得的物品
+    - 8,chestplate
+
+colors:
+  - {id: 1, color: '#FF0000', text: '红色', format: '&c红色'}
+  - {id: 2, color: '#FFFFFF', text: '白色', format: '&f白色'}
+  - {id: 3, color: '#00CCFF', text: '蓝色', format: '&b蓝色'}
+  - {id: 4, color: '#FFFF00', text: '黄色', format: '&e黄色'}
+  - {id: 5, color: '#00FF00', text: '绿色', format: '&a绿色'}
+  - {id: 6, color: '#816431', text: '深褐色', format: '&f深赫色'}
+  - {id: 7, color: '#816431', text: '橙色', format: '&6橙色'}
+  - {id: 8, color: '#000000', text: '黑色', format: '&0黑色'}
+  - {id: 9, color: '#B253AE', text: '浅紫色', format: '&d浅紫色'}
+  - {id: 10, color: '#AB8959', text: '褐色', format: '&f褐色'}
+  - {id: 11, color: '#AA1DA5', text: '紫色', format: '&5紫色'}
+  - {id: 12, color: '#02008F', text: '深蓝色', format: '&1深蓝色'}
+  - {id: 13, color: '#CACA63', text: '浅黄色', format: '&e浅黄色'}
+  - {id: 14, color: '#AC1515', text: '深红色', format: '&4深红色'}
+  - {id: 15, color: '#7A1A77', text: '深紫色', format: '&5深紫色'}
+  - {id: 16, color: '#76EA66', text: '草绿色', format: '&a草绿色'}
+  - {id: 17, color: '#B0B0B0', text: '浅灰色', format: '&7浅灰色'}
+  - {id: 18, color: '#4E4BD2', text: '浅蓝色', format: '&9浅蓝色'}
+  - {id: 19, color: '#5CCB4D', text: '浅绿色', format: '&a浅绿色'}
+  - {id: 20, color: '#109D28', text: '深绿色', format: '&2深绿色'}
+  - {id: 21, color: '#E854D4', text: '粉红色', format: '&d粉红色'}
+  - {id: 22, color: '#A2A225', text: '深黄色', format: '&g深黄色'}
+  - {id: 23, color: '#50A6C3', text: '青色', format: '&3青色'}
+  - {id: 24, color: '#616161', text: '深灰色', format: '&8深灰色'}
+
+lose:
+  title: '游戏结束'
+  slot: 27
+  close: 8
+  spec:
+    slot: 10
+    material: ENDER_EYE
+    name: '继续旁观'
+  again:
+    slot: 13
+    material: SLIME_BALL
+    name: '再来一局'
+  leave:
+    slot: 16
+    material: BED
+    name: '离开游戏'
+
+bungee:
+  group: whosrotten # 所属的分组.
+  lobby: lobby
+  full-restart: true # 整端重启.
+  restart-time: 10 # 重启倒计时. 在此倒计时结束之前为ending状态.

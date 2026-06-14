@@ -1,0 +1,43 @@
+close: # 所有菜单最后一个格子都是 close. 空的格子是filler.
+  material: STAINED_GLASS_PANE
+  data: 14
+  name: '&c关闭'
+filler:
+  material: STAINED_GLASS_PANE
+  data: 15
+
+shop:
+  price: '&a价格&e&l%price%&r&a宝石' # %price% 仅对shop有效. 每个物品的lore后面会被加上这句话. 而%price%就是配置的其价格. 购买要消耗对应的emerald数量. 若不足，则发送 game.nomoney.
+  werewolf:
+    title: '&l[商店]'
+    slot: 27
+    items: # slot, item, price
+      - 10,teleport,3
+      - 13,tracker,3
+      - 16,fakebow,6
+      - 17,fakearrow,1
+  normal:
+    title: '&l[商店]'
+    slot: 27
+    items:
+      - 10,teleport,3
+      - 13,tracker,3
+      - 16,bow,6
+
+item:
+  seer:
+    title: '&5请选择你要查验身份的人'
+    slot: 27
+    player_unknown: # 未查验的玩家.
+      material: LEATHER_CHESTPLATE
+      color: '%player.color.16%'
+      name: '&f&o[&r&f&l%player.color.text%]%player%'
+      lore:
+        - '&e>左键查验身份<'
+    player_known: # 已查验的玩家.
+      material: LEATHER_CHESTPLATE
+      color: '%player.color.16%'
+      enchant: RESPIRATION,1 # 附魔, 格式  ID,level;ID,level
+      name: '&f&o[&r&f&l%player.color.text%]%player%'
+      lore:
+        - '&a&l他是..?%player.kit.format%!'

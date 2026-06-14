@@ -1,0 +1,37 @@
+# message.yml
+#global
+needmore: '&c[狼人杀Ⅱ] &7还需&a%need%&7人开始游戏！'
+join: '&c[狼人杀Ⅱ] &e%player% &7加入了游戏&b(%now%/%max%)'
+leave: '&c[狼人杀Ⅱ] &e%player% &7离开了游戏&b(%now%/%max%)'
+#starting
+counting-start: '&c[狼人杀Ⅱ] &7游戏还有&a30&7秒开始！'
+counting: '&c[狼人杀Ⅱ] &7距离游戏开始还剩&a%t.start%&7秒！'
+started: '&c[狼人杀Ⅱ] &d&l游戏开始！'
+ending: '&c[狼人杀Ⅱ] 服务器即将重启'
+cooldown: '&c冷却中..&e&l%cooldown%&r&c秒'
+win: '&c[狼人杀Ⅱ] &a&l恭喜&d&l%winner%&a&l方获胜！'
+chat: '&f<%player%&r&f> &f<message>'
+
+kit:
+  get-item-tip:
+    werewolf: '&7你将在&a%k.werewolf.gt%&7秒后获得你的特殊能力'
+    hunter: '&7你将在&a%k.hunter.gt%&7秒后获得你的特殊能力'
+    seer: "&7你将在&a%k.seer.gt%&7秒后获得你的特殊能力"
+    normal: "&c收集宝石，购买道具，找出狼人击杀他们!"
+  get-item:
+    werewolf: '&c&l你获得了你的特殊能力，请开始你的表演。'
+    hunter: '&c&l你获得了你的特殊能力，请开始你的表演。'
+    seer: '&c&l你获得了你的特殊能力，请开始你的表演。'
+  seer: '&e&l预言家发动了技能，某个玩家的身份被查验，他是..？%player.kit.format%!!'
+
+game:
+  death: '&c&l【死亡公告】&r&f[<&l%player.color.text%>]&e&l人类死亡!! 坐标:(&d&l%posX%,%posY%,%posZ%&r&f)'
+  chat: '&f可疑的...[<&l%player.color.text%&r&f>] &7说&f: <message>'
+  bowdrop: '&c猎人弓掉落了!!坐标:(&e&l%posX%,%posY%,%posZ%&r&c)'
+  nomoney: '&c你持有的宝石数量不足'
+
+item:
+  discover: '&f最近的一个狼人距离你&a%distance.1%&f米'
+  tracker: '&f玩家 %player% 距离你&a%distance.1%&f米'
+  discover-timeout: '&c&l狼人探测器的效力过去了'
+  seer: '&e&l【查验结果】 &r&f[<&f&l%player.color.text%>]&r&f人类 他是..?%player.kit.format%!!'

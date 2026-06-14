@@ -1,0 +1,109 @@
+emerald:
+  name: '&e&l宝石&n(用于购买商店道具)'
+  material: EMERALD
+
+sword:
+  name: '&c&l狼人的爪子&e&l&n(右键发射火球,30秒cd)'
+  cd: 30000
+  material: DIAMOND_SWORD
+  lore:
+    - '&a&l右键可发射火球'
+    - '&a&l冷却30秒'
+    -
+teleport:
+  name: '&f传送卷轴&e&l&n(右键传送)'
+  lore:
+    - '&a传送到随机出生点'
+  material: PAPER
+
+shop_w:
+  menu: shop.werewolf
+  name: '&6&l狼人专用商店'
+  material: CAULDRON_ITEM
+  can-move: false
+  lore:
+    - '&a&l狼人专用商店'
+    - '&a&l看起来和人类的商店一样'
+
+chestplate:
+  name: '&f&l%p.color.text%'
+  material: LEATHER_CHESTPLATE
+  color: '%p.color.16%'
+  can-move: false # 不可移动
+
+normalbow:
+  name: '猎人的弓'
+  material: BOW
+
+bow:
+  name: '猎人的弓'
+  material: BOW
+  enchant: INFINITY,1
+
+arrow:
+  material: ARROW
+
+shop:
+  menu: shop.normal
+  name: '&6&l道具商店'
+  can-move: false
+  material: CAULDRON_ITEM
+
+discover:
+  name: '&6狼人探测器&e&l&n(右键开启，持续10秒，30秒CD)'
+  cd: 10
+  material: COMPASS
+  lore:
+    - '&a探测最近的狼人'
+    - '&a或许能救自己'
+
+tracker:
+  name: '&6玩家探测器&e&l&n(右键使用)'
+  material: COMPASS
+  lore:
+    - '&a右键使用探测最近的平民'
+    - '&a当该平民死亡时消失'
+
+fakebow:
+  name: '(伪)猎人的弓'
+  material: BOW
+  lore:
+    - '&a帮助你伪装成平民'
+    - '&a无法射杀任何人'
+    -
+fakearrow:
+  name: '无用的箭'
+  material: ARROW
+  lore:
+    - '&a购买以后可以更好的伪装'
+
+seer:
+  name: '&b&l预言魔杖&e&l&n(右键发动查验技能，150秒cd)'
+  menu: item.seer
+  cd: 150000
+
+leave:
+  material: REDSTONE_BLOCK
+  name: '&c&l离开游戏'
+  can-move: false
+
+book_w:
+  name: '&a&l狼人指南&r&7(右键阅读)'
+  material: WRITTEN_BOOK
+  can-move: false
+book_h:
+  name: '&a&l猎人指南&r&7(右键阅读)'
+  material: WRITTEN_BOOK
+  can-move: false
+book_s:
+  name: '&9&l预言家指南&r&7(右键阅读)'
+  material: WRITTEN_BOOK
+  can-move: false
+book_n:
+  name: '&f&l平民指南&r&7(右键阅读)'
+  material: WRITTEN_BOOK
+  can-move: false
+book:
+  name: '&a&l狼人杀指南&r&7(右键阅读)'
+  material: WRITTEN_BOOK
+  can-move: false

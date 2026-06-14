@@ -1,0 +1,49 @@
+werewolf:
+  name: '狼人'
+  format: '&c&l狼人'
+  describe: '用谎言欺诈..然后杀光他们吧!'
+  task: '&c&l请开始你的表演'
+  max: 2
+  thorns: false # 使用弓箭击杀非狼人 自身是否会跟随死亡
+  gt: 25 # 获得物品倒计时
+  items:
+    - 2,sword # slot, item
+    - 4,shop_w
+    - 7,book_w
+
+hunter:
+  name: '猎人'
+  format: '&a&l猎人'
+  describe: '猎杀所有的狼人!'
+  task: '&c&l找出狼人!'
+  max: 2
+  thorns: false
+  gt: 15
+  items:
+    - 2,bow
+    - 3,arrow
+    - 4,shop
+    - 7,book_h
+
+seer:
+  name: '预言家'
+  format: '&b&l预言家'
+  describe: '查验别人的身份!'
+  task: '&c查验那些说谎的人！'
+  max: 2
+  thorns: true
+  gt: 15
+  items:
+    - 2,seer
+    - 4,shop
+    - 7,book_s
+
+normal:
+  name: '平民'
+  format: '&f&l平民'
+  describe: '收集宝石,购买道具,击杀狼人!'
+  task: ''
+  thorns: true
+  items:
+    - 4,shop
+    - 7,book_n
