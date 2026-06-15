@@ -174,6 +174,30 @@ public class GameCombatListener implements Listener {
                 event.setRespawnLocation(deathLoc);
                 Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(deathLoc), 1L);
             }
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                org.bukkit.configuration.ConfigurationSection loseSec = cfg.getConfig().getConfigurationSection("lose");
+                if (loseSec != null) {
+                    org.bukkit.configuration.ConfigurationSection againSec = loseSec.getConfigurationSection("again");
+                    if (againSec != null) {
+                        org.bukkit.Material mat = org.bukkit.Material.matchMaterial(againSec.getString("material", "SLIME_BALL"));
+                        ItemStack againItem = new ItemStack(mat != null ? mat : org.bukkit.Material.SLIME_BALL);
+                        org.bukkit.inventory.meta.ItemMeta meta = againItem.getItemMeta();
+                        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', againSec.getString("name", "再来一局")));
+                        againItem.setItemMeta(meta);
+                        player.getInventory().setItem(6, againItem);
+                    }
+                    org.bukkit.configuration.ConfigurationSection leaveSec = loseSec.getConfigurationSection("leave");
+                    if (leaveSec != null) {
+                        org.bukkit.Material mat = org.bukkit.Material.matchMaterial(leaveSec.getString("material", "BED"));
+                        ItemStack leaveItem = new ItemStack(mat != null ? mat : org.bukkit.Material.BED);
+                        org.bukkit.inventory.meta.ItemMeta meta = leaveItem.getItemMeta();
+                        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', leaveSec.getString("name", "离开游戏")));
+                        leaveItem.setItemMeta(meta);
+                        player.getInventory().setItem(7, leaveItem);
+                    }
+                }
+                plugin.getGameManager().openLoseMenu(player);
+            }, 60L);
         }
     }
 

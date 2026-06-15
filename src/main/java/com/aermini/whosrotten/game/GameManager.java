@@ -294,8 +294,6 @@ public class GameManager {
                         cfg.getConfig().getInt("title.lose.stay", 80),
                         cfg.getConfig().getInt("title.lose.out", 20)
                 );
-
-                Bukkit.getScheduler().runTaskLater(plugin, () -> openLoseMenu(player), 60L);
             }
         }
 
