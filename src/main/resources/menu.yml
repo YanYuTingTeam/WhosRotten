@@ -22,7 +22,7 @@ shop:
     items:
       - 10,teleport,3
       - 13,discover,3
-      - 16,bow,6
+      - 16,normalbow,6
 
 item:
   seer:

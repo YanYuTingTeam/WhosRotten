@@ -23,9 +23,31 @@ public class GameEmeraldListener implements Listener {
 
     @EventHandler
     public void onPickup(PlayerPickupItemEvent event) {
-        if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) return;
         Player player = event.getPlayer();
         ItemStack item = event.getItem().getItemStack();
+
+        if (item.getType() == Material.BOW && item.hasItemMeta()
+                && item.getItemMeta().hasDisplayName()
+                && item.getItemMeta().getDisplayName().contains("猎人的弓")) {
+            GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
+            if (gp == null || !gp.getKitId().equals("normal")) {
+                event.setCancelled(true);
+                return;
+            }
+
+            event.setCancelled(true);
+            event.getItem().remove();
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    "&a&l你接替了猎人的使命! 你现在是猎人!"));
+
+            ItemStack bow = plugin.getGameManager().buildItem("bow", player);
+            if (bow != null) player.getInventory().addItem(bow);
+            ItemStack arrow = plugin.getGameManager().buildItem("arrow", player);
+            if (arrow != null) player.getInventory().addItem(arrow);
+            return;
+        }
+
+        if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) return;
 
         GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
         if (gp == null) return;
@@ -37,27 +59,6 @@ public class GameEmeraldListener implements Listener {
             if (emeraldItem != null) {
                 player.getInventory().addItem(emeraldItem);
             }
-            return;
-        }
-
-        if (item.getType() == Material.BOW && item.hasItemMeta()
-                && item.getItemMeta().hasDisplayName()
-                && item.getItemMeta().getDisplayName().contains("猎人的弓")) {
-            if (gp.getKitId().equals("werewolf") || gp.getKitId().equals("hunter")) {
-                event.setCancelled(true);
-                return;
-            }
-
-            event.setCancelled(true);
-            event.getItem().remove();
-            gp.setKitId("hunter");
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&a&l你接替了猎人的使命! 你现在是猎人!"));
-
-            ItemStack bow = plugin.getGameManager().buildItem("bow", player);
-            if (bow != null) player.getInventory().addItem(bow);
-            ItemStack arrow = plugin.getGameManager().buildItem("arrow", player);
-            if (arrow != null) player.getInventory().addItem(arrow);
             return;
         }
 
