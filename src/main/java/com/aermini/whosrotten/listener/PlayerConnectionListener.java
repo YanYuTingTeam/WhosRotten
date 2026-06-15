@@ -23,6 +23,8 @@ public class PlayerConnectionListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage(null);
         Player player = event.getPlayer();
+        player.setLevel(0);
+        player.setExp(0f);
         plugin.getGameManager().handleJoin(player);
     }
 

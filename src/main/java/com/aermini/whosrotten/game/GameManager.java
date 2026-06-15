@@ -61,6 +61,15 @@ public class GameManager {
         }
     }
 
+    private void keepSunny() {
+        org.bukkit.World gameWorld = getGameWorld();
+        if (gameWorld != null) {
+            gameWorld.setStorm(false);
+            gameWorld.setThundering(false);
+            gameWorld.setWeatherDuration(0);
+        }
+    }
+
     public void startWaiting(String gameName) {
         currentMap = cfg.getMap(gameName);
         if (currentMap == null) {
@@ -75,6 +84,7 @@ public class GameManager {
 
     private void tickWaiting() {
         updateScoreboard();
+        keepSunny();
         int now = cfg.getOnlinePlayers();
         int min = cfg.getMinPlayers();
         if (now >= min) {
@@ -164,6 +174,7 @@ public class GameManager {
         }
         startCountdown--;
         cfg.setStartTimer(startCountdown);
+        keepSunny();
         if (startCountdown <= 0) {
             startGame();
             return;
@@ -240,12 +251,7 @@ public class GameManager {
         cfg.setGameTimer(gameCountdown);
         emeraldTimer++;
 
-        org.bukkit.World gameWorld = getGameWorld();
-        if (gameWorld != null) {
-            gameWorld.setStorm(false);
-            gameWorld.setThundering(false);
-            gameWorld.setWeatherDuration(0);
-        }
+        keepSunny();
 
         int refreshInterval = cfg.getConfig().getInt("emerald-refresh", 10);
         if (emeraldTimer >= refreshInterval) {
