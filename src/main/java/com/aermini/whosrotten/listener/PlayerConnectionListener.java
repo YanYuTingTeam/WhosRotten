@@ -51,9 +51,9 @@ public class PlayerConnectionListener implements Listener {
         if (format.isEmpty()) format = "&f<%player%&r&f> &f<message>";
 
         String msg = MsgFormat.msg(format, player, player)
-                .replace("%player%", player.getName())
+                .replace("%player%", player.getName());
+        msg = ChatColor.translateAlternateColorCodes('&', msg)
                 .replace("<message>", event.getMessage());
-        msg = ChatColor.translateAlternateColorCodes('&', msg);
 
         for (GamePlayer gp2 : plugin.getConfigManager().getAllGamePlayers().values()) {
             Player p = org.bukkit.Bukkit.getPlayer(gp2.getUuid());
