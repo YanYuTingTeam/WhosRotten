@@ -180,7 +180,7 @@ public class GameShopListener implements Listener {
             }
 
             ConfigurationSection seerSec = cfg.getItemSection("seer");
-            long cd = seerSec != null ? seerSec.getLong("cd", 150000) : 150000;
+            long cd = seerSec != null ? seerSec.getLong("cd", 150) * 1000 : 150000;
             seerGp.setCooldown("seer", System.currentTimeMillis() + cd);
 
             player.closeInventory();

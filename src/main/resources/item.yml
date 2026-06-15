@@ -4,7 +4,7 @@ emerald:
 
 sword:
   name: '&c&l狼人的爪子&e&l&n(右键发射火球,30秒cd)'
-  cd: 30000
+  cd: 30
   material: DIAMOND_SWORD
   lore:
     - '&a&l右键可发射火球'
@@ -51,7 +51,7 @@ shop:
 
 discover:
   name: '&6狼人探测器&e&l&n(右键开启，持续10秒，30秒CD)'
-  cd: 10000
+  cd: 10
   material: COMPASS
   lore:
     - '&a探测最近的狼人'
@@ -81,7 +81,7 @@ seer:
   material: BLAZE_ROD
   name: '&b&l预言魔杖&e&l&n(右键发动查验技能，150秒cd)'
   menu: item.seer
-  cd: 150000
+  cd: 150
 
 leave:
   material: REDSTONE_BLOCK

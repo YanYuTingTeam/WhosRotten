@@ -209,7 +209,7 @@ public class GameItemListener implements Listener {
         fireball.setYield(0);
 
         ConfigurationSection swordSec = cfg.getItemSection("sword");
-        long cd = swordSec != null ? swordSec.getLong("cd", 30000) : 30000;
+        long cd = swordSec != null ? swordSec.getLong("cd", 30) * 1000 : 30000;
         gp.setCooldown("sword", System.currentTimeMillis() + cd);
     }
 
