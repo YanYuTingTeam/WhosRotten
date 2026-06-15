@@ -6,6 +6,7 @@ import com.aermini.whosrotten.game.GameBook;
 import com.aermini.whosrotten.game.GameManager;
 import com.aermini.whosrotten.game.GamePlayer;
 import com.aermini.whosrotten.manager.ConfigManager;
+import com.aermini.whosrotten.util.PacketUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -253,7 +254,7 @@ public class GameItemListener implements Listener {
 
         String msg = cfg.getMsg("item.discover");
         String formatted = ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(msg, player, nearest, nearest.getLocation()));
-        plugin.getGameManager().sendActionBar(player, formatted);
+        PacketUtil.sendActionBar(player, formatted);
 
         ConfigurationSection sec = cfg.getItemSection("discover");
         long cd = sec != null ? sec.getLong("cd", 10) * 1000 : 10000;
@@ -266,7 +267,7 @@ public class GameItemListener implements Listener {
             if (!player.isOnline()) return;
             String timeoutMsg = cfg.getMsg("item.discover-timeout");
             if (!timeoutMsg.isEmpty()) {
-                plugin.getGameManager().sendActionBar(player,
+                PacketUtil.sendActionBar(player,
                         ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(timeoutMsg, player)));
             }
         }, 40L).getTaskId();
@@ -317,7 +318,7 @@ public class GameItemListener implements Listener {
                 String msg = cfg.getMsg("item.tracker");
                 String formatted = ChatColor.translateAlternateColorCodes('&',
                         MsgFormat.msg(msg, player, targetPlayer, targetPlayer.getLocation()));
-                plugin.getGameManager().sendActionBar(player, formatted);
+                PacketUtil.sendActionBar(player, formatted);
             }
         }.runTaskTimer(plugin, 0L, 20L).getTaskId();
         plugin.getGameManager().putTrackerTask(player.getUniqueId(), taskId);

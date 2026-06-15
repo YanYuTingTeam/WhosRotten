@@ -4,6 +4,8 @@ import com.aermini.whosrotten.MsgFormat;
 import com.aermini.whosrotten.WhosRotten;
 import com.aermini.whosrotten.manager.ConfigManager;
 import com.aermini.whosrotten.util.BungeeUtil;
+import com.aermini.whosrotten.util.EnchantUtil;
+import com.aermini.whosrotten.util.PacketUtil;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -280,7 +282,7 @@ public class GameManager {
 
             boolean isWinner = isPlayerWinner(gp, winnerTeam);
             if (isWinner) {
-                sendTitleWithTiming(player,
+                PacketUtil.sendTitleWithTiming(player,
                         colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.title", "&e&l大吉大利!你获胜了!"), player)),
                         colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.subtitle", "&2&l" + winnerTeam + "方获胜!"), player)),
                         cfg.getConfig().getInt("title.win.in", 20),
@@ -293,7 +295,7 @@ public class GameManager {
                     executeReward(player, "reward.leave");
                 }
             } else {
-                sendTitleWithTiming(player,
+                PacketUtil.sendTitleWithTiming(player,
                         colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.title", "&e&l很遗憾!你输了.."), player)),
                         colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.subtitle", "&2&l" + winnerTeam + "方获胜了.."), player)),
                         cfg.getConfig().getInt("title.lose.in", 20),
@@ -544,7 +546,7 @@ public class GameManager {
                 String[] ep = ench.split(",");
                 if (ep.length >= 2) {
                     try {
-                        org.bukkit.enchantments.Enchantment e = getEnchant(ep[0].trim());
+                        org.bukkit.enchantments.Enchantment e = EnchantUtil.getEnchant(ep[0].trim());
                         int level = Integer.parseInt(ep[1].trim());
                         if (e != null) meta.addEnchant(e, level, true);
                     } catch (Exception ignored) {}
@@ -620,7 +622,7 @@ public class GameManager {
         String format = kitSec.getString("format", "");
         String describe = kitSec.getString("describe", "");
         String task = kitSec.getString("task", "");
-        sendTitleWithTiming(player,
+        PacketUtil.sendTitleWithTiming(player,
                 colorize(MsgFormat.msg("&f本局你是..&l" + format + "!", player)),
                 colorize(MsgFormat.msg(describe, player)),
                 20, 60, 20
@@ -832,7 +834,7 @@ public class GameManager {
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
             Player p = Bukkit.getPlayer(gp.getUuid());
             if (p != null) {
-                sendTitleWithTiming(p,
+                PacketUtil.sendTitleWithTiming(p,
                         colorize(MsgFormat.msg(title, p, eventPlayer, eventLocation)),
                         colorize(MsgFormat.msg(subtitle, p, eventPlayer, eventLocation)),
                         in, stay, out
@@ -848,7 +850,7 @@ public class GameManager {
         int in = cfg.getConfig().getInt(path + ".in", 20);
         int stay = cfg.getConfig().getInt(path + ".stay", 60);
         int out = cfg.getConfig().getInt(path + ".out", 20);
-        sendTitleWithTiming(player,
+        PacketUtil.sendTitleWithTiming(player,
                 colorize(MsgFormat.msg(title, player)),
                 colorize(MsgFormat.msg(subtitle, player)),
                 in, stay, out
@@ -1000,7 +1002,7 @@ public class GameManager {
                     String[] ep = ench.split(",");
                     if (ep.length >= 2) {
                         try {
-                            org.bukkit.enchantments.Enchantment e = getEnchant(ep[0].trim());
+                            org.bukkit.enchantments.Enchantment e = EnchantUtil.getEnchant(ep[0].trim());
                             int level = Integer.parseInt(ep[1].trim());
                             if (e != null) meta.addEnchant(e, level, true);
                         } catch (Exception ignored) {}
@@ -1045,7 +1047,7 @@ public class GameManager {
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
             Player p = Bukkit.getPlayer(gp.getUuid());
             if (p != null) {
-                sendTitleWithTiming(p,
+                PacketUtil.sendTitleWithTiming(p,
                         colorize(MsgFormat.msg(title, p, eventPlayer)),
                         colorize(MsgFormat.msg(subtitle, p, eventPlayer)),
                         in, stay, out
@@ -1105,72 +1107,6 @@ public class GameManager {
         player.openInventory(inv);
     }
 
-    private void sendTitleWithTiming(Player player, String title, String subtitle, int fadeIn, int stay, int out) {
-        try {
-            String pkgName = player.getClass().getPackage().getName();
-            String nmsVersion = null;
-            for (String part : pkgName.split("\\.")) {
-                if (part.matches("v\\d+_\\d+_R\\d+")) { nmsVersion = part; break; }
-            }
-            if (nmsVersion == null) return;
-            Class<?> packetClass = Class.forName("net.minecraft.server." + nmsVersion + ".PacketPlayOutTitle");
-            Class<?> enumClass = Class.forName("net.minecraft.server." + nmsVersion + ".PacketPlayOutTitle$EnumTitleAction");
-            Class<?> chatSerializer = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent$ChatSerializer");
-            Class<?> chatComponent = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent");
-
-            Object timesPacket = packetClass.getConstructor(enumClass, chatComponent, int.class, int.class, int.class)
-                    .newInstance(enumClass.getEnumConstants()[2], null, fadeIn, stay, out);
-
-            Object titleComp = title != null ? chatSerializer.getMethod("a", String.class)
-                    .invoke(null, "{\"text\":\"" + title.replace("\"", "\\\"") + "\"}") : null;
-            Object subtitleComp = subtitle != null ? chatSerializer.getMethod("a", String.class)
-                    .invoke(null, "{\"text\":\"" + subtitle.replace("\"", "\\\"") + "\"}") : null;
-
-            Object titlePacket = packetClass.getConstructor(enumClass, chatComponent, int.class, int.class, int.class)
-                    .newInstance(enumClass.getEnumConstants()[0], titleComp, fadeIn, stay, out);
-            Object subtitlePacket = packetClass.getConstructor(enumClass, chatComponent, int.class, int.class, int.class)
-                    .newInstance(enumClass.getEnumConstants()[1], subtitleComp, fadeIn, stay, out);
-
-            Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            Object connection = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
-            Class<?> basePacket = Class.forName("net.minecraft.server." + nmsVersion + ".Packet");
-            java.lang.reflect.Method sendPacket = connection.getClass().getMethod("sendPacket", basePacket);
-
-            sendPacket.invoke(connection, timesPacket);
-            if (titleComp != null) sendPacket.invoke(connection, titlePacket);
-            if (subtitleComp != null) sendPacket.invoke(connection, subtitlePacket);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendActionBar(Player player, String text) {
-        try {
-            String pkgName = player.getClass().getPackage().getName();
-            String nmsVersion = null;
-            for (String part : pkgName.split("\\.")) {
-                if (part.matches("v\\d+_\\d+_R\\d+")) { nmsVersion = part; break; }
-            }
-            if (nmsVersion == null) return;
-            Class<?> chatSerializer = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent$ChatSerializer");
-            Class<?> chatComponent = Class.forName("net.minecraft.server." + nmsVersion + ".IChatBaseComponent");
-            Class<?> packetClass = Class.forName("net.minecraft.server." + nmsVersion + ".PacketPlayOutChat");
-
-            Object component = chatSerializer.getMethod("a", String.class)
-                    .invoke(null, "{\"text\":\"" + text.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}");
-            Object packet = packetClass.getConstructor(chatComponent, byte.class)
-                    .newInstance(component, (byte) 2);
-
-            Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            Object connection = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
-            Class<?> basePacket = Class.forName("net.minecraft.server." + nmsVersion + ".Packet");
-            java.lang.reflect.Method sendPacket = connection.getClass().getMethod("sendPacket", basePacket);
-            sendPacket.invoke(connection, packet);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void putTrackerTask(UUID uuid, int taskId) {
         Integer old = trackerTasks.remove(uuid);
         if (old != null) Bukkit.getScheduler().cancelTask(old);
@@ -1191,62 +1127,5 @@ public class GameManager {
 
     private String colorize(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
-    }
-
-    private org.bukkit.enchantments.Enchantment getEnchant(String name) {
-        org.bukkit.enchantments.Enchantment e = org.bukkit.enchantments.Enchantment.getByName(name.toUpperCase());
-        if (e != null) return e;
-        switch (name.toLowerCase()) {
-            case "infinity": case "arrow_infinite":
-                return org.bukkit.enchantments.Enchantment.ARROW_INFINITE;
-            case "sharpness": case "damage_all":
-                return org.bukkit.enchantments.Enchantment.DAMAGE_ALL;
-            case "smite": case "damage_undead":
-                return org.bukkit.enchantments.Enchantment.DAMAGE_UNDEAD;
-            case "bane": case "bane_of_arthropods": case "damage_arthropods":
-                return org.bukkit.enchantments.Enchantment.DAMAGE_ARTHROPODS;
-            case "protection": case "protection_environmental":
-                return org.bukkit.enchantments.Enchantment.PROTECTION_ENVIRONMENTAL;
-            case "fire_protection": case "protection_fire":
-                return org.bukkit.enchantments.Enchantment.PROTECTION_FIRE;
-            case "feather_falling": case "protection_fall":
-                return org.bukkit.enchantments.Enchantment.PROTECTION_FALL;
-            case "blast_protection": case "protection_explosions":
-                return org.bukkit.enchantments.Enchantment.PROTECTION_EXPLOSIONS;
-            case "projectile_protection": case "protection_projectile":
-                return org.bukkit.enchantments.Enchantment.PROTECTION_PROJECTILE;
-            case "respiration":
-                return org.bukkit.enchantments.Enchantment.OXYGEN;
-            case "aqua_affinity":
-                return org.bukkit.enchantments.Enchantment.WATER_WORKER;
-            case "thorns":
-                return org.bukkit.enchantments.Enchantment.THORNS;
-            case "fire_aspect":
-                return org.bukkit.enchantments.Enchantment.FIRE_ASPECT;
-            case "looting": case "looting_bonus":
-                return org.bukkit.enchantments.Enchantment.LOOT_BONUS_MOBS;
-            case "fortune":
-                return org.bukkit.enchantments.Enchantment.LOOT_BONUS_BLOCKS;
-            case "power": case "arrow_damage":
-                return org.bukkit.enchantments.Enchantment.ARROW_DAMAGE;
-            case "punch": case "arrow_knockback":
-                return org.bukkit.enchantments.Enchantment.ARROW_KNOCKBACK;
-            case "flame": case "arrow_fire":
-                return org.bukkit.enchantments.Enchantment.ARROW_FIRE;
-            case "luck_of_the_sea": case "luck":
-                return org.bukkit.enchantments.Enchantment.LUCK;
-            case "lure":
-                return org.bukkit.enchantments.Enchantment.LURE;
-            case "efficiency": case "dig_speed":
-                return org.bukkit.enchantments.Enchantment.DIG_SPEED;
-            case "silk_touch":
-                return org.bukkit.enchantments.Enchantment.SILK_TOUCH;
-            case "unbreaking": case "durability":
-                return org.bukkit.enchantments.Enchantment.DURABILITY;
-            case "knockback":
-                return org.bukkit.enchantments.Enchantment.KNOCKBACK;
-            default:
-                return null;
-        }
     }
 }
