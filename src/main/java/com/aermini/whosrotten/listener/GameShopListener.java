@@ -124,8 +124,6 @@ public class GameShopListener implements Listener {
             for (ItemStack inv : player.getInventory().getContents()) {
                 if (inv != null && inv.getType() == Material.EMERALD) remain += inv.getAmount();
             }
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&a购买成功! &7剩余宝石: &e" + remain));
             break;
         }
     }

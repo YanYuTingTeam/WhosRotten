@@ -102,8 +102,11 @@ public class GameItemListener implements Listener {
 
         if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()
                 && item.getItemMeta().getDisplayName().contains("预言魔杖")) {
-            event.setCancelled(true);
-            handleSeerItem(player);
+            if (event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR
+                    || event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
+                event.setCancelled(true);
+                handleSeerItem(player);
+            }
             return;
         }
 
@@ -264,7 +267,7 @@ public class GameItemListener implements Listener {
             String timeoutMsg = cfg.getMsg("item.discover-timeout");
             if (!timeoutMsg.isEmpty()) {
                 plugin.getGameManager().sendActionBar(player,
-                    ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(timeoutMsg, player)));
+                        ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(timeoutMsg, player)));
             }
         }, 40L).getTaskId();
         plugin.getGameManager().putTrackerTask(player.getUniqueId(), taskId);
@@ -313,7 +316,7 @@ public class GameItemListener implements Listener {
                 }
                 String msg = cfg.getMsg("item.tracker");
                 String formatted = ChatColor.translateAlternateColorCodes('&',
-                    MsgFormat.msg(msg, player, targetPlayer, targetPlayer.getLocation()));
+                        MsgFormat.msg(msg, player, targetPlayer, targetPlayer.getLocation()));
                 plugin.getGameManager().sendActionBar(player, formatted);
             }
         }.runTaskTimer(plugin, 0L, 20L).getTaskId();
@@ -334,12 +337,6 @@ public class GameItemListener implements Listener {
     private void handleSeerItem(Player player) {
         GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
         if (gp == null || !gp.getKitId().equals("seer")) return;
-        if (!gp.isCooldownReady("seer")) {
-            int remain = gp.getCooldownRemain("seer");
-            String msg = cfg.getMsg("cooldown").replace("%cooldown%", String.valueOf(remain));
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(msg, player)));
-            return;
-        }
         plugin.getGameManager().openSeerMenu(player);
     }
 
