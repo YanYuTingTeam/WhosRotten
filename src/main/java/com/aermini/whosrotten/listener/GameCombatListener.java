@@ -10,7 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
-import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.LargeFireball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -54,8 +54,8 @@ public class GameCombatListener implements Listener {
         Player damaged = (Player) event.getEntity();
         Player attacker = null;
 
-        if (event.getDamager() instanceof SmallFireball) {
-            SmallFireball fireball = (SmallFireball) event.getDamager();
+        if (event.getDamager() instanceof LargeFireball) {
+            LargeFireball fireball = (LargeFireball) event.getDamager();
             if (fireball.getShooter() instanceof Player) {
                 attacker = (Player) fireball.getShooter();
             }
@@ -184,6 +184,10 @@ public class GameCombatListener implements Listener {
         GamePlayer gpAttacker = cfg.getGamePlayer(attacker.getUniqueId());
         if (gpDamaged == null || gpAttacker == null) return;
         if (!gpDamaged.isAlive()) return;
+
+        if (gpAttacker.getKitId().equals("werewolf")) {
+            damaged.getWorld().playSound(damaged.getLocation(), org.bukkit.Sound.HURT_FLESH, 1.0f, 1.0f);
+        }
 
         damaged.setHealth(0);
     }

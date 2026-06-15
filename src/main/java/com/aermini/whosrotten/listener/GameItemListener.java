@@ -12,7 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.SmallFireball;
+import org.bukkit.entity.LargeFireball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -198,9 +198,10 @@ public class GameItemListener implements Listener {
 
         Vector dir = player.getLocation().getDirection().normalize();
         Location loc = player.getEyeLocation().add(dir);
-        SmallFireball fireball = player.getWorld().spawn(loc, SmallFireball.class);
+        LargeFireball fireball = player.getWorld().spawn(loc, LargeFireball.class);
         fireball.setShooter(player);
         fireball.setDirection(dir);
+        fireball.setVelocity(dir);
         fireball.setIsIncendiary(false);
         fireball.setYield(0);
 
