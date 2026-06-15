@@ -37,7 +37,6 @@ public class GameEmeraldListener implements Listener {
             if (emeraldItem != null) {
                 player.getInventory().addItem(emeraldItem);
             }
-            gp.addEmerald(1);
             return;
         }
 

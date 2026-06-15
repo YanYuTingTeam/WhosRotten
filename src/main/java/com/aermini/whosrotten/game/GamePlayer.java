@@ -9,7 +9,6 @@ public class GamePlayer {
     private int colorId;
     private String kitId;
     private boolean alive;
-    private int emeraldCount;
     private final Map<String, Long> cooldowns = new HashMap<>();
     private final Map<String, Boolean> knownPlayers = new HashMap<>();
 
@@ -18,7 +17,6 @@ public class GamePlayer {
         this.colorId = 0;
         this.kitId = "normal";
         this.alive = true;
-        this.emeraldCount = 0;
     }
 
     public java.util.UUID getUuid() { return uuid; }
@@ -28,14 +26,6 @@ public class GamePlayer {
     public void setKitId(String kitId) { this.kitId = kitId; }
     public boolean isAlive() { return alive; }
     public void setAlive(boolean alive) { this.alive = alive; }
-    public int getEmeraldCount() { return emeraldCount; }
-    public void setEmeraldCount(int count) { this.emeraldCount = count; }
-    public void addEmerald(int amount) { this.emeraldCount += amount; }
-    public boolean removeEmerald(int amount) {
-        if (this.emeraldCount < amount) return false;
-        this.emeraldCount -= amount;
-        return true;
-    }
 
     public long getCooldown(String key) { return cooldowns.getOrDefault(key, 0L); }
     public void setCooldown(String key, long expireTime) { cooldowns.put(key, expireTime); }

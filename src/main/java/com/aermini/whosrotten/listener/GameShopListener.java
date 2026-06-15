@@ -68,9 +68,6 @@ public class GameShopListener implements Listener {
         if (clicked == null || clicked.getType() == Material.AIR) return;
         if (clicked.getType() == Material.STAINED_GLASS_PANE) return;
 
-        GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
-        if (gp == null) return;
-
         String shopKey = findShopKey(player);
         if (shopKey == null) return;
 
@@ -87,12 +84,30 @@ public class GameShopListener implements Listener {
 
             if (itemSlot != slot) continue;
 
-            if (!gp.removeEmerald(price)) {
+            int have = 0;
+            for (ItemStack inv : player.getInventory().getContents()) {
+                if (inv != null && inv.getType() == Material.EMERALD) have += inv.getAmount();
+            }
+            if (have < price) {
                 String noMoney = cfg.getMsg("game.nomoney");
                 if (!noMoney.isEmpty()) {
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(noMoney, player)));
                 }
                 return;
+            }
+
+            int left = price;
+            for (int i = 0; i < player.getInventory().getSize() && left > 0; i++) {
+                ItemStack inv = player.getInventory().getItem(i);
+                if (inv != null && inv.getType() == Material.EMERALD) {
+                    if (inv.getAmount() <= left) {
+                        left -= inv.getAmount();
+                        player.getInventory().clear(i);
+                    } else {
+                        inv.setAmount(inv.getAmount() - left);
+                        left = 0;
+                    }
+                }
             }
 
             ItemStack item = plugin.getGameManager().buildItem(itemId, player);
@@ -105,8 +120,12 @@ public class GameShopListener implements Listener {
                 if (arrow != null) player.getInventory().addItem(arrow);
             }
 
+            int remain = 0;
+            for (ItemStack inv : player.getInventory().getContents()) {
+                if (inv != null && inv.getType() == Material.EMERALD) remain += inv.getAmount();
+            }
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&a购买成功! &7剩余宝石: &e" + gp.getEmeraldCount()));
+                    "&a购买成功! &7剩余宝石: &e" + remain));
             break;
         }
     }
