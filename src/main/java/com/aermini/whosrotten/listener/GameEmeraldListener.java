@@ -37,8 +37,6 @@ public class GameEmeraldListener implements Listener {
             if (emeraldItem != null) {
                 player.getInventory().addItem(emeraldItem);
             }
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&a+1 宝石 &7(当前: &e" + (gp.getEmeraldCount() + 1) + "&7)"));
             gp.addEmerald(1);
             return;
         }
@@ -55,7 +53,7 @@ public class GameEmeraldListener implements Listener {
             event.getItem().remove();
             gp.setKitId("hunter");
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&a&l你接替了猎人的使命! 你现在是猎人!"));
+                    "&a&l你接替了猎人的使命! 你现在是猎人!"));
 
             ItemStack bow = plugin.getGameManager().buildItem("bow", player);
             if (bow != null) player.getInventory().addItem(bow);

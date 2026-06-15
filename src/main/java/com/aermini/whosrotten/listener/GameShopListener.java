@@ -100,8 +100,13 @@ public class GameShopListener implements Listener {
                 player.getInventory().addItem(item);
             }
 
+            if (itemId.equals("bow")) {
+                ItemStack arrow = plugin.getGameManager().buildItem("arrow", player);
+                if (arrow != null) player.getInventory().addItem(arrow);
+            }
+
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&a购买成功! &7剩余宝石: &e" + gp.getEmeraldCount()));
+                    "&a购买成功! &7剩余宝石: &e" + gp.getEmeraldCount()));
             break;
         }
     }
@@ -150,7 +155,7 @@ public class GameShopListener implements Listener {
                     Player p = Bukkit.getPlayer(gp.getUuid());
                     if (p != null) {
                         p.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                            MsgFormat.msg(broadcastMsg, p, target)));
+                                MsgFormat.msg(broadcastMsg, p, target)));
                     }
                 }
 

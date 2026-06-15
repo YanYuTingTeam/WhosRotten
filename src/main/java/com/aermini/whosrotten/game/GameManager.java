@@ -222,10 +222,10 @@ public class GameManager {
             giveGamingItems(player);
             giveColorArmor(player, gp);
             giveKitStartItems(player, gp);
-            hideNameTag(player);
             showRoleInfo(player, gp);
         }
 
+        hideAllNameTags();
         setupWerewolfTeams();
 
         scheduleKitTasks();
@@ -275,11 +275,11 @@ public class GameManager {
             boolean isWinner = isPlayerWinner(gp, winnerTeam);
             if (isWinner) {
                 sendTitleWithTiming(player,
-                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.title", "&e&l大吉大利!你获胜了!"), player)),
-                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.subtitle", "&2&l" + winnerTeam + "方获胜!"), player)),
-                    cfg.getConfig().getInt("title.win.in", 20),
-                    cfg.getConfig().getInt("title.win.stay", 80),
-                    cfg.getConfig().getInt("title.win.out", 20)
+                        colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.title", "&e&l大吉大利!你获胜了!"), player)),
+                        colorize(MsgFormat.msg(cfg.getConfig().getString("title.win.subtitle", "&2&l" + winnerTeam + "方获胜!"), player)),
+                        cfg.getConfig().getInt("title.win.in", 20),
+                        cfg.getConfig().getInt("title.win.stay", 80),
+                        cfg.getConfig().getInt("title.win.out", 20)
                 );
                 if (!isLeaveWin) {
                     executeReward(player, "reward.winner");
@@ -288,11 +288,11 @@ public class GameManager {
                 }
             } else {
                 sendTitleWithTiming(player,
-                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.title", "&e&l很遗憾!你输了.."), player)),
-                    colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.subtitle", "&2&l" + winnerTeam + "方获胜了.."), player)),
-                    cfg.getConfig().getInt("title.lose.in", 20),
-                    cfg.getConfig().getInt("title.lose.stay", 80),
-                    cfg.getConfig().getInt("title.lose.out", 20)
+                        colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.title", "&e&l很遗憾!你输了.."), player)),
+                        colorize(MsgFormat.msg(cfg.getConfig().getString("title.lose.subtitle", "&2&l" + winnerTeam + "方获胜了.."), player)),
+                        cfg.getConfig().getInt("title.lose.in", 20),
+                        cfg.getConfig().getInt("title.lose.stay", 80),
+                        cfg.getConfig().getInt("title.lose.out", 20)
                 );
 
                 Bukkit.getScheduler().runTaskLater(plugin, () -> openLoseMenu(player), 60L);
@@ -459,10 +459,10 @@ public class GameManager {
         }
         org.bukkit.Color bukkitColor = org.bukkit.Color.fromRGB(rgb);
         Material[] armorMats = {
-            Material.LEATHER_BOOTS,
-            Material.LEATHER_LEGGINGS,
-            Material.LEATHER_CHESTPLATE,
-            Material.LEATHER_HELMET
+                Material.LEATHER_BOOTS,
+                Material.LEATHER_LEGGINGS,
+                Material.LEATHER_CHESTPLATE,
+                Material.LEATHER_HELMET
         };
         int[] armorSlots = {36, 37, 38, 39};
         for (int i = 0; i < armorMats.length; i++) {
@@ -540,7 +540,7 @@ public class GameManager {
                 String[] ep = ench.split(",");
                 if (ep.length >= 2) {
                     try {
-                        org.bukkit.enchantments.Enchantment e = org.bukkit.enchantments.Enchantment.getByName(ep[0].trim());
+                        org.bukkit.enchantments.Enchantment e = getEnchant(ep[0].trim());
                         int level = Integer.parseInt(ep[1].trim());
                         if (e != null) meta.addEnchant(e, level, true);
                     } catch (Exception ignored) {}
@@ -563,20 +563,34 @@ public class GameManager {
         return item;
     }
 
-    private void hideNameTag(Player player) {
-        org.bukkit.scoreboard.Scoreboard board = player.getScoreboard();
-        org.bukkit.scoreboard.Team team = board.getTeam("wr_hide");
-        if (team == null) {
-            team = board.registerNewTeam("wr_hide");
-            team.setNameTagVisibility(org.bukkit.scoreboard.NameTagVisibility.NEVER);
+    private void hideAllNameTags() {
+        for (GamePlayer viewerGp : cfg.getAllGamePlayers().values()) {
+            Player viewer = Bukkit.getPlayer(viewerGp.getUuid());
+            if (viewer == null) continue;
+            org.bukkit.scoreboard.Scoreboard board = viewer.getScoreboard();
+            org.bukkit.scoreboard.Team team = board.getTeam("wr_hide");
+            if (team == null) {
+                team = board.registerNewTeam("wr_hide");
+                team.setNameTagVisibility(org.bukkit.scoreboard.NameTagVisibility.NEVER);
+            }
+            for (GamePlayer other : cfg.getAllGamePlayers().values()) {
+                if (other.getUuid().equals(viewerGp.getUuid())) continue;
+                Player otherPlayer = Bukkit.getPlayer(other.getUuid());
+                if (otherPlayer != null) team.addEntry(otherPlayer.getName());
+            }
         }
-        team.addEntry(player.getName());
     }
 
     private void resetNameTag(Player player) {
-        org.bukkit.scoreboard.Scoreboard board = player.getScoreboard();
-        org.bukkit.scoreboard.Team team = board.getTeam("wr_hide");
-        if (team != null) team.removeEntry(player.getName());
+        for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
+            Player viewer = Bukkit.getPlayer(gp.getUuid());
+            if (viewer == null) continue;
+            org.bukkit.scoreboard.Scoreboard board = viewer.getScoreboard();
+            org.bukkit.scoreboard.Team team = board.getTeam("wr_hide");
+            if (team != null) team.removeEntry(player.getName());
+            org.bukkit.scoreboard.Team wolfTeam = board.getTeam("wr_wolf");
+            if (wolfTeam != null) wolfTeam.removeEntry(player.getName());
+        }
     }
 
     private void setupWerewolfTeams() {
@@ -603,9 +617,9 @@ public class GameManager {
         String describe = kitSec.getString("describe", "");
         String task = kitSec.getString("task", "");
         sendTitleWithTiming(player,
-            colorize(MsgFormat.msg("&f本局你是..&l" + format + "!", player)),
-            colorize(MsgFormat.msg(describe, player)),
-            20, 60, 20
+                colorize(MsgFormat.msg("&f本局你是..&l" + format + "!", player)),
+                colorize(MsgFormat.msg(describe, player)),
+                20, 60, 20
         );
     }
 
@@ -663,8 +677,8 @@ public class GameManager {
         Color c1 = colors[new Random().nextInt(colors.length)];
         Color c2 = colors[new Random().nextInt(colors.length)];
         fmeta.addEffect(FireworkEffect.builder()
-            .with(FireworkEffect.Type.BALL_LARGE)
-            .withColor(c1).withFade(c2).trail(true).flicker(true).build());
+                .with(FireworkEffect.Type.BALL_LARGE)
+                .withColor(c1).withFade(c2).trail(true).flicker(true).build());
         fmeta.setPower(1);
         fw.setFireworkMeta(fmeta);
         fw.detonate();
@@ -815,9 +829,9 @@ public class GameManager {
             Player p = Bukkit.getPlayer(gp.getUuid());
             if (p != null) {
                 sendTitleWithTiming(p,
-                    colorize(MsgFormat.msg(title, p, eventPlayer, eventLocation)),
-                    colorize(MsgFormat.msg(subtitle, p, eventPlayer, eventLocation)),
-                    in, stay, out
+                        colorize(MsgFormat.msg(title, p, eventPlayer, eventLocation)),
+                        colorize(MsgFormat.msg(subtitle, p, eventPlayer, eventLocation)),
+                        in, stay, out
                 );
             }
         }
@@ -831,9 +845,9 @@ public class GameManager {
         int stay = cfg.getConfig().getInt(path + ".stay", 60);
         int out = cfg.getConfig().getInt(path + ".out", 20);
         sendTitleWithTiming(player,
-            colorize(MsgFormat.msg(title, player)),
-            colorize(MsgFormat.msg(subtitle, player)),
-            in, stay, out
+                colorize(MsgFormat.msg(title, player)),
+                colorize(MsgFormat.msg(subtitle, player)),
+                in, stay, out
         );
     }
 
@@ -853,7 +867,7 @@ public class GameManager {
         String title = menuSec.getString("title", menuKey);
         int slot = menuSec.getInt("slot", 27);
         org.bukkit.inventory.Inventory inv = Bukkit.createInventory(null, slot,
-            ChatColor.translateAlternateColorCodes('&', title));
+                ChatColor.translateAlternateColorCodes('&', title));
 
         ConfigurationSection closeSec = cfg.getMenuConfig().getConfigurationSection("close");
         if (closeSec != null) {
@@ -910,7 +924,7 @@ public class GameManager {
         String title = seerMenu.getString("title", "&5请选择你要查验身份的人");
         int slot = seerMenu.getInt("slot", 27);
         org.bukkit.inventory.Inventory inv = Bukkit.createInventory(null, slot,
-            ChatColor.translateAlternateColorCodes('&', title));
+                ChatColor.translateAlternateColorCodes('&', title));
 
         GamePlayer seerGp = cfg.getGamePlayer(player.getUniqueId());
         if (seerGp == null) return;
@@ -982,7 +996,7 @@ public class GameManager {
                     String[] ep = ench.split(",");
                     if (ep.length >= 2) {
                         try {
-                            org.bukkit.enchantments.Enchantment e = org.bukkit.enchantments.Enchantment.getByName(ep[0].trim());
+                            org.bukkit.enchantments.Enchantment e = getEnchant(ep[0].trim());
                             int level = Integer.parseInt(ep[1].trim());
                             if (e != null) meta.addEnchant(e, level, true);
                         } catch (Exception ignored) {}
@@ -1028,9 +1042,9 @@ public class GameManager {
             Player p = Bukkit.getPlayer(gp.getUuid());
             if (p != null) {
                 sendTitleWithTiming(p,
-                    colorize(MsgFormat.msg(title, p, eventPlayer)),
-                    colorize(MsgFormat.msg(subtitle, p, eventPlayer)),
-                    in, stay, out
+                        colorize(MsgFormat.msg(title, p, eventPlayer)),
+                        colorize(MsgFormat.msg(subtitle, p, eventPlayer)),
+                        in, stay, out
                 );
             }
         }
@@ -1042,7 +1056,7 @@ public class GameManager {
         String title = loseSec.getString("title", "游戏结束");
         int slot = loseSec.getInt("slot", 27);
         org.bukkit.inventory.Inventory inv = Bukkit.createInventory(null, slot,
-            ChatColor.translateAlternateColorCodes('&', title));
+                ChatColor.translateAlternateColorCodes('&', title));
 
         ConfigurationSection specSec = loseSec.getConfigurationSection("spec");
         if (specSec != null) {
@@ -1139,9 +1153,9 @@ public class GameManager {
             Class<?> packetClass = Class.forName("net.minecraft.server." + nmsVersion + ".PacketPlayOutChat");
 
             Object component = chatSerializer.getMethod("a", String.class)
-                .invoke(null, "{\"text\":\"" + text.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}");
+                    .invoke(null, "{\"text\":\"" + text.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}");
             Object packet = packetClass.getConstructor(chatComponent, byte.class)
-                .newInstance(component, (byte) 2);
+                    .newInstance(component, (byte) 2);
 
             Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
             Object connection = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
@@ -1173,5 +1187,62 @@ public class GameManager {
 
     private String colorize(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
+    }
+
+    private org.bukkit.enchantments.Enchantment getEnchant(String name) {
+        org.bukkit.enchantments.Enchantment e = org.bukkit.enchantments.Enchantment.getByName(name.toUpperCase());
+        if (e != null) return e;
+        switch (name.toLowerCase()) {
+            case "infinity": case "arrow_infinite":
+                return org.bukkit.enchantments.Enchantment.ARROW_INFINITE;
+            case "sharpness": case "damage_all":
+                return org.bukkit.enchantments.Enchantment.DAMAGE_ALL;
+            case "smite": case "damage_undead":
+                return org.bukkit.enchantments.Enchantment.DAMAGE_UNDEAD;
+            case "bane": case "bane_of_arthropods": case "damage_arthropods":
+                return org.bukkit.enchantments.Enchantment.DAMAGE_ARTHROPODS;
+            case "protection": case "protection_environmental":
+                return org.bukkit.enchantments.Enchantment.PROTECTION_ENVIRONMENTAL;
+            case "fire_protection": case "protection_fire":
+                return org.bukkit.enchantments.Enchantment.PROTECTION_FIRE;
+            case "feather_falling": case "protection_fall":
+                return org.bukkit.enchantments.Enchantment.PROTECTION_FALL;
+            case "blast_protection": case "protection_explosions":
+                return org.bukkit.enchantments.Enchantment.PROTECTION_EXPLOSIONS;
+            case "projectile_protection": case "protection_projectile":
+                return org.bukkit.enchantments.Enchantment.PROTECTION_PROJECTILE;
+            case "respiration":
+                return org.bukkit.enchantments.Enchantment.OXYGEN;
+            case "aqua_affinity":
+                return org.bukkit.enchantments.Enchantment.WATER_WORKER;
+            case "thorns":
+                return org.bukkit.enchantments.Enchantment.THORNS;
+            case "fire_aspect":
+                return org.bukkit.enchantments.Enchantment.FIRE_ASPECT;
+            case "looting": case "looting_bonus":
+                return org.bukkit.enchantments.Enchantment.LOOT_BONUS_MOBS;
+            case "fortune":
+                return org.bukkit.enchantments.Enchantment.LOOT_BONUS_BLOCKS;
+            case "power": case "arrow_damage":
+                return org.bukkit.enchantments.Enchantment.ARROW_DAMAGE;
+            case "punch": case "arrow_knockback":
+                return org.bukkit.enchantments.Enchantment.ARROW_KNOCKBACK;
+            case "flame": case "arrow_fire":
+                return org.bukkit.enchantments.Enchantment.ARROW_FIRE;
+            case "luck_of_the_sea": case "luck":
+                return org.bukkit.enchantments.Enchantment.LUCK;
+            case "lure":
+                return org.bukkit.enchantments.Enchantment.LURE;
+            case "efficiency": case "dig_speed":
+                return org.bukkit.enchantments.Enchantment.DIG_SPEED;
+            case "silk_touch":
+                return org.bukkit.enchantments.Enchantment.SILK_TOUCH;
+            case "unbreaking": case "durability":
+                return org.bukkit.enchantments.Enchantment.DURABILITY;
+            case "knockback":
+                return org.bukkit.enchantments.Enchantment.KNOCKBACK;
+            default:
+                return null;
+        }
     }
 }
