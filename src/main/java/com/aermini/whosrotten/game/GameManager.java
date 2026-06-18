@@ -236,7 +236,7 @@ public class GameManager {
             player.getInventory().clear();
             giveGamingItems(player);
             giveColorArmor(player, gp);
-            giveKitGTItems(player, gp);
+            giveKitStartItems(player, gp);
         }
 
         hideAllNameTags();
@@ -491,7 +491,7 @@ public class GameManager {
     }
 
     private void giveKitStartItems(Player player, GamePlayer gp) {
-        sendMsg(player, "kit.get-item-tip." + gp.getKitId());
+        //sendMsg(player, "kit.get-item-tip." + gp.getKitId());
         int gt = cfg.getKitGT(gp.getKitId());
         if (gt <= 0) {
             giveKitGTItems(player, gp);
