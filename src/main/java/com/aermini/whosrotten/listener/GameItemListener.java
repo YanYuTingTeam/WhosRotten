@@ -44,6 +44,16 @@ public class GameItemListener implements Listener {
             return;
         }
 
+        if (item.getType() == Material.DIAMOND && item.hasItemMeta()
+                && item.getItemMeta().hasDisplayName()
+                && item.getItemMeta().getDisplayName().contains("开始游戏")) {
+            event.setCancelled(true);
+            if (state == GameManager.GameState.WAITING || state == GameManager.GameState.STARTING) {
+                plugin.getGameManager().forceStart();
+            }
+            return;
+        }
+
         if (item.getType() == Material.REDSTONE_BLOCK && item.hasItemMeta()
                 && item.getItemMeta().hasDisplayName()
                 && item.getItemMeta().getDisplayName().contains("离开游戏")) {

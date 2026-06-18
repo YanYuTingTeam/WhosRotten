@@ -449,6 +449,17 @@ public class GameManager {
             ItemStack item = buildItem(itemId, player);
             if (item != null) player.getInventory().setItem(slot, item);
         }
+        if (player.hasPermission("whosrotten.admin")) {
+            ItemStack startItem = new ItemStack(Material.DIAMOND);
+            org.bukkit.inventory.meta.ItemMeta meta = startItem.getItemMeta();
+            meta.setDisplayName("开始游戏");
+            startItem.setItemMeta(meta);
+            player.getInventory().setItem(1, startItem);
+        }
+    }
+
+    public void forceStart() {
+        if (state == GameState.WAITING || state == GameState.STARTING) startGame();
     }
 
     private void giveGamingItems(Player player) {
