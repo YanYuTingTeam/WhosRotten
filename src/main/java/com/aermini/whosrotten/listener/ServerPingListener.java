@@ -26,7 +26,11 @@ public class ServerPingListener implements Listener {
         String motd;
         switch (state) {
             case STARTING:
-                motd = cfg.getConfig().getString("motd.starting", "");
+                if (cfg.getOnlinePlayers() >= cfg.getMaxPlayers()) {
+                    motd = cfg.getConfig().getString("motd.full", "");
+                } else {
+                    motd = cfg.getConfig().getString("motd.waiting", "");
+                }
                 break;
             case GAMING:
                 motd = cfg.getConfig().getString("motd.gaming", "");

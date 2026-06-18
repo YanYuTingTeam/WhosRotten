@@ -192,6 +192,6 @@ bungee:
 
 motd:
   waiting: 'already'
-  starting: '即将开始'
+  full: 'full'
   gaming: '游戏中'
   ending: '结束中'
