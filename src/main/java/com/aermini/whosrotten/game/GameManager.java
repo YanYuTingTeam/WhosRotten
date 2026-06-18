@@ -236,8 +236,7 @@ public class GameManager {
             player.getInventory().clear();
             giveGamingItems(player);
             giveColorArmor(player, gp);
-            giveKitStartItems(player, gp);
-            showRoleInfo(player, gp);
+            giveKitGTItems(player, gp);
         }
 
         hideAllNameTags();
@@ -247,6 +246,14 @@ public class GameManager {
 
         broadcastMsg("started");
         broadcastTitle("started");
+
+        for (GamePlayer gp : playerList) {
+            Player player = Bukkit.getPlayer(gp.getUuid());
+            if (player == null) continue;
+            sendMsg(player, "kit.get-item-tip." + gp.getKitId());
+            showRoleInfo(player, gp);
+        }
+
         updateScoreboard();
     }
 
