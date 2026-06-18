@@ -32,6 +32,7 @@ public class WhosRotten extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GameShopListener(this), this);
         getServer().getPluginManager().registerEvents(new GameEmeraldListener(this), this);
         getServer().getPluginManager().registerEvents(new GameItemProtectListener(this), this);
+        getServer().getPluginManager().registerEvents(new ServerPingListener(this), this);
 
         getCommand("whosrotten").setExecutor(new com.aermini.whosrotten.wrCommand(this));
 
