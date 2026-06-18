@@ -10,6 +10,7 @@ import com.google.common.io.ByteStreams;
 
 public class WhosRotten extends JavaPlugin {
     private static WhosRotten instance;
+    private GameCombatListener combatListener;
     private Logger logger;
     private ConfigManager configManager;
     private GameManager gameManager;
@@ -25,7 +26,8 @@ public class WhosRotten extends JavaPlugin {
         gameManager = new GameManager(this);
 
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
-        getServer().getPluginManager().registerEvents(new GameCombatListener(this), this);
+        combatListener = new GameCombatListener(this);
+        getServer().getPluginManager().registerEvents(combatListener, this);
         getServer().getPluginManager().registerEvents(new GameItemListener(this), this);
         getServer().getPluginManager().registerEvents(new GameShopListener(this), this);
         getServer().getPluginManager().registerEvents(new GameEmeraldListener(this), this);
@@ -52,6 +54,7 @@ public class WhosRotten extends JavaPlugin {
     public Logger getPluginLogger() { return logger; }
     public ConfigManager getConfigManager() { return configManager; }
     public GameManager getGameManager() { return gameManager; }
+    public GameCombatListener getCombatListener() { return combatListener; }
 
     public void sendBungeeMessage(org.bukkit.entity.Player player, String subchannel, String... data) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();

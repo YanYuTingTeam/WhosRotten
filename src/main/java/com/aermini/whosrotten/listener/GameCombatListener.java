@@ -20,6 +20,8 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +32,38 @@ public class GameCombatListener implements Listener {
     private final WhosRotten plugin;
     private final ConfigManager cfg;
     private final Map<UUID, org.bukkit.Location> deathLocations = new HashMap<>();
+    private final Map<UUID, Integer> wolfParticleTasks = new HashMap<>();
+
+    private static final java.lang.reflect.Constructor<?> nmsParticlePacketConstructor;
+    private static final java.lang.reflect.Method nmsSendMethod;
+    private static final Object particleRedstone;
+    static {
+        java.lang.reflect.Constructor<?> pCon = null;
+        java.lang.reflect.Method sMet = null;
+        Object pRed = null;
+        try {
+            String ver = org.bukkit.Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            Class<?> packetClass = Class.forName("net.minecraft.server." + ver + ".PacketPlayOutWorldParticles");
+            Class<?> enumClass = Class.forName("net.minecraft.server." + ver + ".EnumParticle");
+            pRed = enumClass.getMethod("valueOf", String.class).invoke(null, "REDSTONE");
+            for (java.lang.reflect.Constructor<?> c : packetClass.getDeclaredConstructors()) {
+                Class<?>[] pts = c.getParameterTypes();
+                if (pts.length >= 9 && pts[0].isEnum()) {
+                    pCon = c;
+                    pCon.setAccessible(true);
+                    break;
+                }
+            }
+            Class<?> connClass = Class.forName("net.minecraft.server." + ver + ".PlayerConnection");
+            for (java.lang.reflect.Method m : connClass.getDeclaredMethods()) {
+                if (m.getName().equals("sendPacket") && m.getParameterTypes().length == 1) { sMet = m; sMet.setAccessible(true); break; }
+            }
+        } catch (Throwable ignored) {
+        }
+        nmsParticlePacketConstructor = pCon;
+        nmsSendMethod = sMet;
+        particleRedstone = pRed;
+    }
 
     public GameCombatListener(WhosRotten plugin) {
         this.plugin = plugin;
@@ -211,8 +245,87 @@ public class GameCombatListener implements Listener {
 
         if (gpAttacker.getKitId().equals("werewolf")) {
             damaged.getWorld().playSound(damaged.getLocation(), org.bukkit.Sound.HURT_FLESH, 1.0f, 1.0f);
+            startWolfParticleCircle(attacker);
         }
 
         damaged.setHealth(0);
+    }
+
+    public void cancelAllWolfParticleTasks() {
+        for (int taskId : wolfParticleTasks.values()) {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+        wolfParticleTasks.clear();
+    }
+
+    private void startWolfParticleCircle(Player wolf) {
+        UUID uid = wolf.getUniqueId();
+        Integer oldTask = wolfParticleTasks.remove(uid);
+        if (oldTask != null) Bukkit.getScheduler().cancelTask(oldTask);
+
+        if (nmsParticlePacketConstructor == null || nmsSendMethod == null || particleRedstone == null) {
+            return;
+        }
+
+        int taskId = new BukkitRunnable() {
+            int count = 0;
+            @Override
+            public void run() {
+                if (!wolf.isOnline() || count >= 20) {
+                    wolfParticleTasks.remove(uid);
+                    cancel();
+                    return;
+                }
+                org.bukkit.Location eyeLoc = wolf.getEyeLocation();
+                Vector dir = eyeLoc.getDirection().normalize().multiply(0.5);
+                org.bukkit.Location handLoc = eyeLoc.add(dir).add(0, -0.3, 0);
+                double radius = 0.5;
+                int points = 8;
+                for (int i = 0; i < points; i++) {
+                    double angle = 2 * Math.PI * i / points;
+                    double x = handLoc.getX() + radius * Math.cos(angle);
+                    double y = handLoc.getY();
+                    double z = handLoc.getZ() + radius * Math.sin(angle);
+                    spawnRedstoneDust(handLoc.getWorld(), x, y, z);
+                }
+                count++;
+            }
+        }.runTaskTimer(plugin, 0L, 5L).getTaskId();
+        wolfParticleTasks.put(uid, taskId);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void spawnRedstoneDust(org.bukkit.World world, double x, double y, double z) {
+        if (nmsParticlePacketConstructor == null || nmsSendMethod == null || particleRedstone == null) return;
+        try {
+            int len = nmsParticlePacketConstructor.getParameterTypes().length;
+            Object packet;
+            if (len == 11) {
+                packet = nmsParticlePacketConstructor.newInstance(
+                        particleRedstone, true,
+                        (float) x, (float) y, (float) z,
+                        0f, 0f, 0f, 0f, 1, new int[0]
+                );
+            } else if (len == 10) {
+                packet = nmsParticlePacketConstructor.newInstance(
+                        particleRedstone, true,
+                        (float) x, (float) y, (float) z,
+                        0f, 0f, 0f, 0f, 1
+                );
+            } else {
+                packet = nmsParticlePacketConstructor.newInstance(
+                        particleRedstone,
+                        (float) x, (float) y, (float) z,
+                        0f, 0f, 0f, 0f, 1
+                );
+            }
+            Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
+            Object playerList = nmsWorld.getClass().getField("players").get(nmsWorld);
+            for (Object ep : (java.util.List<?>) playerList) {
+                Object conn = ep.getClass().getField("playerConnection").get(ep);
+                nmsSendMethod.invoke(conn, packet);
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

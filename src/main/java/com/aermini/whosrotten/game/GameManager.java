@@ -345,6 +345,7 @@ public class GameManager {
         for (int id : kitTasks) Bukkit.getScheduler().cancelTask(id);
         kitTasks.clear();
         cancelAllTrackerTasks();
+        plugin.getCombatListener().cancelAllWolfParticleTasks();
 
         if (cfg.getConfig().getBoolean("endclear", true)) {
             for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
