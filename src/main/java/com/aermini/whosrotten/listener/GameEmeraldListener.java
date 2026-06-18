@@ -28,7 +28,7 @@ public class GameEmeraldListener implements Listener {
 
         if (item.getType() == Material.BOW && item.hasItemMeta()
                 && item.getItemMeta().hasDisplayName()
-                && item.getItemMeta().getDisplayName().contains("猎人的弓")) {
+                && item.getItemMeta().getDisplayName().contains("猎人的弓 ")) {
             GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
             if (gp == null || !gp.getKitId().equals("normal")) {
                 event.setCancelled(true);

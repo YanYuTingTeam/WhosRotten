@@ -36,7 +36,7 @@ normalbow:
   material: BOW
 
 bow:
-  name: '猎人的弓'
+  name: '猎人的弓 '
   material: BOW
   enchant: infinity,1
 
