@@ -16,6 +16,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -134,6 +135,44 @@ public class GameCombatListener implements Listener {
     public void onFoodChange(FoodLevelChangeEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onShootBow(EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) return;
+        Player player = (Player) event.getEntity();
+        GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
+        if (gp == null) return;
+
+        ItemStack bow = event.getBow();
+        if (bow == null || !bow.hasItemMeta() || !bow.getItemMeta().hasDisplayName()) return;
+        String bowName = bow.getItemMeta().getDisplayName();
+
+        String bowItemId = null;
+        for (String key : cfg.getItemConfig().getKeys(false)) {
+            org.bukkit.configuration.ConfigurationSection sec = cfg.getItemConfig().getConfigurationSection(key);
+            if (sec == null) continue;
+            if (!"BOW".equalsIgnoreCase(sec.getString("material", ""))) continue;
+            String cfgName = sec.getString("name", "");
+            if (cfgName.isEmpty()) continue;
+            String colorizedName = org.bukkit.ChatColor.translateAlternateColorCodes('&', cfgName);
+            if (bowName.equals(colorizedName)) { bowItemId = key; break; }
+        }
+        if (bowItemId == null) return;
+
+        org.bukkit.configuration.ConfigurationSection bowSec = cfg.getItemSection(bowItemId);
+        if (bowSec == null || !bowSec.contains("cd")) return;
+        long cd = bowSec.getLong("cd", 0) * 1000;
+
+        if (!gp.isCooldownReady("bow")) {
+            event.setCancelled(true);
+            int remain = gp.getCooldownRemain("bow");
+            String msg = cfg.getMsg("cooldown").replace("%cooldown%", String.valueOf(remain));
+            if (!msg.isEmpty()) player.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', MsgFormat.msg(msg, player)));
+            return;
+        }
+        gp.setCooldown("bow", System.currentTimeMillis() + cd);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

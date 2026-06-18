@@ -32,10 +32,12 @@ chestplate:
   can-move: false # 不可移动
 
 normalbow:
+  cd: 5
   name: '猎人的弓'
   material: BOW
 
 bow:
+  cd: 5
   name: '猎人的弓 '
   material: BOW
   enchant: infinity,1
@@ -65,6 +67,7 @@ tracker:
     - '&a当该平民死亡时消失'
 
 fakebow:
+  cd: 5
   name: '(伪)猎人的弓'
   material: BOW
   lore:
