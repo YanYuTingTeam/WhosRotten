@@ -26,6 +26,7 @@ public class GameManager {
     private GameMap currentMap;
 
     private int startCountdown;
+    private int startTimeTotal;
     private int gameCountdown;
     private int emeraldTimer;
     private int endingTimer;
@@ -162,7 +163,8 @@ public class GameManager {
 
     private void startCountdown() {
         state = GameState.STARTING;
-        startCountdown = cfg.getConfig().getInt("starttime", 30);
+        startTimeTotal = cfg.getConfig().getInt("starttime", 30);
+        startCountdown = startTimeTotal;
         broadcastMsg("counting-start");
     }
 
@@ -174,15 +176,15 @@ public class GameManager {
             updateScoreboard();
             return;
         }
-        startCountdown--;
         cfg.setStartTimer(startCountdown);
         keepSunny();
+        broadcastTitle("countstart");
         if (startCountdown <= 0) {
             startGame();
             return;
         }
-        broadcastMsg("counting");
-        broadcastTitle("countstart");
+        if (startCountdown < startTimeTotal) broadcastMsg("counting");
+        startCountdown--;
         updateScoreboard();
     }
 
