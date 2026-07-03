@@ -127,15 +127,17 @@ public class GameManager {
             cfg.removeGamePlayer(uuid);
             quitDuringGame.put(uuid, quitKit);
             broadcastMsg("leave", player);
+            boolean isWolfQuit = quitKit.equals("werewolf");
             boolean noSameTeamLeft = true;
             for (GamePlayer other : cfg.getAllGamePlayers().values()) {
-                if (other.getKitId().equals(quitKit)) {
+                boolean otherIsWolf = other.getKitId().equals("werewolf");
+                if (isWolfQuit == otherIsWolf) {
                     noSameTeamLeft = false;
                     break;
                 }
             }
             if (noSameTeamLeft) {
-                if (quitKit.equals("werewolf")) endGame("人类");
+                if (isWolfQuit) endGame("人类");
                 else endGame("狼人");
             }
         } else if (state == GameState.ENDING) {

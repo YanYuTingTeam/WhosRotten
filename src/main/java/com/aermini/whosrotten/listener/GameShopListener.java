@@ -115,9 +115,12 @@ public class GameShopListener implements Listener {
                 player.getInventory().addItem(item);
             }
 
-            if (itemId.equals("bow")) {
-                ItemStack arrow = plugin.getGameManager().buildItem("arrow", player);
-                if (arrow != null) player.getInventory().addItem(arrow);
+            if (itemId.equals("normalbow")) {
+                GamePlayer buyer = cfg.getGamePlayer(player.getUniqueId());
+                if (buyer != null && !buyer.getKitId().equals("werewolf")) {
+                    ItemStack arrow = plugin.getGameManager().buildItem("arrow", player);
+                    if (arrow != null) player.getInventory().addItem(arrow);
+                }
             }
 
             int remain = 0;
