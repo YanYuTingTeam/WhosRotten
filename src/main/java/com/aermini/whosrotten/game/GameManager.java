@@ -300,10 +300,12 @@ public class GameManager {
                         cfg.getConfig().getInt("title.win.stay", 80),
                         cfg.getConfig().getInt("title.win.out", 20)
                 );
-                if (!isLeaveWin) {
-                    executeReward(player, "reward.winner");
-                } else {
-                    executeReward(player, "reward.leave");
+                if (gp.isAlive()) {
+                    if (!isLeaveWin) {
+                        executeReward(player, "reward.winner");
+                    } else {
+                        executeReward(player, "reward.leave");
+                    }
                 }
             } else {
                 PacketUtil.sendTitleWithTiming(player,
@@ -747,7 +749,6 @@ public class GameManager {
     }
 
     private boolean isPlayerWinner(GamePlayer gp, String winnerTeam) {
-        if (!gp.isAlive()) return false;
         if (winnerTeam.equals("狼人")) return gp.getKitId().equals("werewolf");
         return !gp.getKitId().equals("werewolf");
     }
