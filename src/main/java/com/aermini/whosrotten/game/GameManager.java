@@ -97,6 +97,13 @@ public class GameManager {
 
     public void handleJoin(Player player) {
         GamePlayer gp = cfg.getOrCreateGamePlayer(player.getUniqueId());
+        if (state == GameState.GAMING && currentMap != null && !currentMap.getSpawnPoints().isEmpty()) {
+            player.setGameMode(GameMode.SPECTATOR);
+            player.getInventory().clear();
+            player.teleport(currentMap.getSpawnPoints().get(new Random().nextInt(currentMap.getSpawnPoints().size())));
+            updateScoreboard();
+            return;
+        }
         player.setGameMode(GameMode.SURVIVAL);
         player.getInventory().clear();
 
