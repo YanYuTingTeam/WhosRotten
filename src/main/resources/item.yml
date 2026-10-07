@@ -91,6 +91,12 @@ leave:
   name: '&c&l离开游戏'
   can-move: false
 
+bowtracker:
+  name: '&6&l弓箭追踪器'
+  material: COMPASS
+  lore:
+    - '&a指向猎人死亡后掉落的弓箭'
+
 book_w:
   name: '&a&l狼人指南&r&7(右键阅读)'
   material: WRITTEN_BOOK

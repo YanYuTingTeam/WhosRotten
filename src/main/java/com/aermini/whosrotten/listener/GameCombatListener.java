@@ -195,10 +195,11 @@ public class GameCombatListener implements Listener {
         gp.setAlive(false);
         deathLocations.put(dead.getUniqueId(), dead.getLocation().clone());
 
-        if (gp.getKitId().equals("hunter")) {
+        if (gp.getKitId().equals("hunter") || hasHunterBow(dead)) {
             ItemStack bow = plugin.getGameManager().buildItem("bow", dead);
             if (bow != null) {
-                dead.getWorld().dropItemNaturally(dead.getLocation(), bow);
+                org.bukkit.entity.Item bowDrop = dead.getWorld().dropItemNaturally(dead.getLocation(), bow);
+                plugin.getGameManager().onHunterBowDrop(bowDrop);
             }
             String bowDropMsg = cfg.getMsg("game.bowdrop");
             if (!bowDropMsg.isEmpty()) {
@@ -272,6 +273,17 @@ public class GameCombatListener implements Listener {
                 plugin.getGameManager().openLoseMenu(player);
             }, 60L);
         }
+    }
+
+    private boolean hasHunterBow(Player p) {
+        for (ItemStack item : p.getInventory().getContents()) {
+            if (item != null && item.getType() == Material.BOW
+                    && item.hasItemMeta() && item.getItemMeta().hasDisplayName()
+                    && item.getItemMeta().getDisplayName().contains("猎人的弓 ")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void handleKill(Player damaged, Player attacker) {

@@ -365,6 +365,9 @@ public class GameManager {
         for (int id : kitTasks) Bukkit.getScheduler().cancelTask(id);
         kitTasks.clear();
         cancelAllTrackerTasks();
+        stopBowTrackerTask();
+        for (org.bukkit.entity.Item drop : hunterBowDrops) drop.remove();
+        hunterBowDrops.clear();
         plugin.getCombatListener().cancelAllWolfParticleTasks();
 
         if (cfg.getConfig().getBoolean("endclear", true)) {
@@ -812,6 +815,8 @@ public class GameManager {
 
     private final Map<UUID, GameScoreboard> scoreboards = new HashMap<>();
     private final Map<UUID, Integer> trackerTasks = new HashMap<>();
+    private final List<org.bukkit.entity.Item> hunterBowDrops = new ArrayList<>();
+    private int bowTrackerTaskId = -1;
 
     private GameScoreboard getOrCreateScoreboard(Player player, String title) {
         return scoreboards.computeIfAbsent(player.getUniqueId(), k -> new GameScoreboard(title));
@@ -1154,6 +1159,82 @@ public class GameManager {
             Bukkit.getScheduler().cancelTask(taskId);
         }
         trackerTasks.clear();
+    }
+
+    public void onHunterBowDrop(org.bukkit.entity.Item drop) {
+        hunterBowDrops.add(drop);
+        giveBowTrackers();
+        startBowTrackerTask();
+    }
+
+    public void onHunterBowPickup(org.bukkit.entity.Item drop) {
+        hunterBowDrops.remove(drop);
+        if (hunterBowDrops.isEmpty()) clearBowTrackers();
+    }
+
+    private void giveBowTrackers() {
+        for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
+            if (!gp.isAlive() || !gp.getKitId().equals("normal")) continue;
+            Player p = Bukkit.getPlayer(gp.getUuid());
+            if (p == null || hasBowTracker(p)) continue;
+            ItemStack tracker = buildItem("bowtracker", p);
+            if (tracker != null) p.getInventory().addItem(tracker);
+        }
+    }
+
+    private boolean hasBowTracker(Player p) {
+        for (ItemStack item : p.getInventory().getContents()) {
+            if (item != null && isBowTracker(item)) return true;
+        }
+        return false;
+    }
+
+    public void clearBowTrackers() {
+        for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
+            Player p = Bukkit.getPlayer(gp.getUuid());
+            if (p == null) continue;
+            ItemStack[] contents = p.getInventory().getContents();
+            for (int i = 0; i < contents.length; i++) {
+                if (contents[i] != null && isBowTracker(contents[i])) p.getInventory().setItem(i, null);
+            }
+        }
+    }
+
+    private boolean isBowTracker(ItemStack item) {
+        return item.getType() == Material.COMPASS && item.hasItemMeta() && item.getItemMeta().hasDisplayName()
+                && item.getItemMeta().getDisplayName().contains("弓箭追踪器");
+    }
+
+    private void startBowTrackerTask() {
+        if (bowTrackerTaskId != -1) return;
+        bowTrackerTaskId = new BukkitRunnable() {
+            @Override
+            public void run() {
+                hunterBowDrops.removeIf(drop -> drop.isDead());
+                if (hunterBowDrops.isEmpty()) {
+                    clearBowTrackers();
+                    stopBowTrackerTask();
+                    return;
+                }
+                for (org.bukkit.entity.Item drop : hunterBowDrops) {
+                    drop.setTicksLived(0);
+                }
+                org.bukkit.entity.Item target = hunterBowDrops.get(0);
+                for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
+                    if (!gp.isAlive() || !gp.getKitId().equals("normal")) continue;
+                    Player p = Bukkit.getPlayer(gp.getUuid());
+                    if (p == null) continue;
+                    p.setCompassTarget(target.getLocation());
+                }
+            }
+        }.runTaskTimer(plugin, 1L, 20L).getTaskId();
+    }
+
+    private void stopBowTrackerTask() {
+        if (bowTrackerTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(bowTrackerTaskId);
+            bowTrackerTaskId = -1;
+        }
     }
 
     private String colorize(String text) {

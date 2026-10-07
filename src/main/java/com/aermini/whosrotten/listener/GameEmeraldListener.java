@@ -37,6 +37,7 @@ public class GameEmeraldListener implements Listener {
 
             event.setCancelled(true);
             event.getItem().remove();
+            plugin.getGameManager().onHunterBowPickup(event.getItem());
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                     "&a&l你接替了猎人的使命! 你现在是猎人!"));
 
