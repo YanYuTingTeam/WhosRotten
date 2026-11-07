@@ -74,7 +74,21 @@ public class GameCombatListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onNaturalDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
-        if (event.isCancelled()) return;
+        Player player = (Player) event.getEntity();
+        if (event.getCause() == EntityDamageEvent.DamageCause.VOID
+                || event.getCause() == EntityDamageEvent.DamageCause.LAVA) {
+            if (plugin.getGameManager().getState() != GameManager.GameState.GAMING) {
+                event.setCancelled(true);
+                return;
+            }
+            GamePlayer gp = cfg.getGamePlayer(player.getUniqueId());
+            if (gp == null || !gp.isAlive()) {
+                event.setCancelled(true);
+                return;
+            }
+            if (player.getHealth() > 0) player.setHealth(0);
+            return;
+        }
         event.setCancelled(true);
     }
 
@@ -192,13 +206,21 @@ public class GameCombatListener implements Listener {
 
         GamePlayer gp = cfg.getGamePlayer(dead.getUniqueId());
         if (gp == null) return;
+        boolean wasAlive = gp.isAlive();
+        boolean droppedBow = wasAlive && (gp.getKitId().equals("hunter") || hasHunterBow(dead));
         gp.setAlive(false);
         deathLocations.put(dead.getUniqueId(), dead.getLocation().clone());
 
-        if (gp.getKitId().equals("hunter") || hasHunterBow(dead)) {
+        if (droppedBow) {
             ItemStack bow = plugin.getGameManager().buildItem("bow", dead);
             if (bow != null) {
-                org.bukkit.entity.Item bowDrop = dead.getWorld().dropItemNaturally(dead.getLocation(), bow);
+                org.bukkit.Location dropLoc = dead.getLocation();
+                if (!isSafeGround(dropLoc)) {
+                    org.bukkit.Location safeLoc = getSafeDropLocation(dead);
+                    if (safeLoc != null) dropLoc = safeLoc;
+                }
+                if (dropLoc.getWorld() == null) dropLoc = dead.getLocation();
+                org.bukkit.entity.Item bowDrop = dead.getWorld().dropItemNaturally(dropLoc, bow);
                 plugin.getGameManager().onHunterBowDrop(bowDrop);
             }
             String bowDropMsg = cfg.getMsg("game.bowdrop");
@@ -273,6 +295,53 @@ public class GameCombatListener implements Listener {
                 plugin.getGameManager().openLoseMenu(player);
             }, 60L);
         }
+    }
+
+    private org.bukkit.Location getSafeDropLocation(Player dead) {
+        org.bukkit.World world = dead.getWorld();
+        if (world == null) return null;
+        for (int r = 0; r <= 8; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    org.bukkit.Location loc = new org.bukkit.Location(world,
+                            dead.getLocation().getBlockX() + dx,
+                            dead.getLocation().getBlockY(),
+                            dead.getLocation().getBlockZ() + dz);
+                    if (isSafeGround(loc)) return loc;
+                }
+            }
+        }
+        for (int dy = 1; dy <= 8; dy++) {
+            org.bukkit.Location loc = new org.bukkit.Location(world,
+                    dead.getLocation().getBlockX(),
+                    dead.getLocation().getBlockY() + dy,
+                    dead.getLocation().getBlockZ());
+            if (isSafeGround(loc)) return loc;
+        }
+        com.aermini.whosrotten.game.GameMap map = plugin.getGameManager().getCurrentMap();
+        if (map != null) {
+            for (org.bukkit.Location loc : map.getSpawnPoints()) {
+                if (loc != null && loc.getWorld() != null && isSafeGround(loc)) return loc.clone();
+            }
+            if (map.getLobby() != null && map.getLobby().getWorld() != null && isSafeGround(map.getLobby())) {
+                return map.getLobby().clone();
+            }
+        }
+        return null;
+    }
+
+    private boolean isSafeGround(org.bukkit.Location loc) {
+        if (loc == null || loc.getWorld() == null) return false;
+        if (loc.getY() <= 1 || loc.getY() >= loc.getWorld().getMaxHeight()) return false;
+        if (loc.getBlock() == null) return false;
+        org.bukkit.Material ground = loc.getBlock().getType();
+        if (ground == Material.AIR || ground == Material.LAVA || ground == Material.STATIONARY_LAVA
+                || ground == Material.FIRE || ground == Material.WATER || ground == Material.STATIONARY_WATER) {
+            return false;
+        }
+        org.bukkit.block.Block aboveBlock = loc.getBlock().getRelative(0, 1, 0);
+        if (aboveBlock == null) return false;
+        return aboveBlock.getType() == Material.AIR;
     }
 
     private boolean hasHunterBow(Player p) {
