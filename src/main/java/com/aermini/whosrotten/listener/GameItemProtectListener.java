@@ -4,6 +4,7 @@ import com.aermini.whosrotten.WhosRotten;
 import com.aermini.whosrotten.manager.ConfigManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +14,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class GameItemProtectListener implements Listener {
@@ -65,6 +67,15 @@ public class GameItemProtectListener implements Listener {
                 return;
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPortal(PlayerPortalEvent event) {
+        if (event.getTo() == null || event.getTo().getWorld() == null) return;
+        World.Environment env = event.getTo().getWorld().getEnvironment();
+        if (env != World.Environment.NETHER && env != World.Environment.THE_END) return;
+        event.useTravelAgent(false);
+        event.setCancelled(true);
     }
 
     @EventHandler
