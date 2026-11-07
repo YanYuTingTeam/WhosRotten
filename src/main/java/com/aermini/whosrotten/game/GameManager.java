@@ -98,6 +98,7 @@ public class GameManager {
     public void handleJoin(Player player) {
         GamePlayer gp = cfg.getOrCreateGamePlayer(player.getUniqueId());
         if (state == GameState.GAMING && currentMap != null && !currentMap.getSpawnPoints().isEmpty()) {
+            gp.setAlive(false);
             player.setGameMode(GameMode.SPECTATOR);
             player.getInventory().clear();
             player.teleport(currentMap.getSpawnPoints().get(new Random().nextInt(currentMap.getSpawnPoints().size())));
@@ -137,6 +138,7 @@ public class GameManager {
             boolean isWolfQuit = quitKit.equals("werewolf");
             boolean noSameTeamLeft = true;
             for (GamePlayer other : cfg.getAllGamePlayers().values()) {
+                if (!other.isAlive()) continue;
                 boolean otherIsWolf = other.getKitId().equals("werewolf");
                 if (isWolfQuit == otherIsWolf) {
                     noSameTeamLeft = false;
@@ -198,6 +200,7 @@ public class GameManager {
     }
 
     private void startGame() {
+        if (state == GameState.GAMING) return;
         state = GameState.GAMING;
         gameCountdown = cfg.getConfig().getInt("gametime", 600);
         emeraldTimer = 0;
@@ -295,6 +298,7 @@ public class GameManager {
         boolean isLeaveWin = isLeaveWin();
 
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
+            if (!gp.isAlive()) continue;
             Player player = Bukkit.getPlayer(gp.getUuid());
             if (player == null) continue;
 
@@ -473,6 +477,7 @@ public class GameManager {
     }
 
     public void forceStart() {
+        if (cfg.getOnlinePlayers() < cfg.getMinPlayers()) return;
         if (state == GameState.WAITING || state == GameState.STARTING) startGame();
     }
 
@@ -742,6 +747,7 @@ public class GameManager {
         boolean hasWerewolf = false;
         boolean hasHuman = false;
         for (GamePlayer gp : cfg.getAllGamePlayers().values()) {
+            if (!gp.isAlive()) continue;
             if (gp.getKitId().equals("werewolf")) hasWerewolf = true;
             else hasHuman = true;
         }
